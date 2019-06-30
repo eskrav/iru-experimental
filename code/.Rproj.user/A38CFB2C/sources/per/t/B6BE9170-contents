@@ -1,0 +1,139 @@
+glimpse(dataES)
+glimpse(dataEC)
+badItems <- c(14,5,4,15,21)
+
+sumDataEC <- dataEC %>%
+  filter(!(workerid %in% questionable)) %>%
+  group_by(item, world, activity) %>%
+  summarize(rating = mean(rating)) %>%
+  print(n=Inf)
+
+sumDataES <- dataES %>%
+  filter(!(workerid %in% questionable)) %>%
+  group_by(item, condition) %>%
+  summarize(rating = mean(rating)) %>%
+  print(n=Inf)
+
+joined <- left_join(sumDataEC, sumDataES, by = c("item", "activity" = "condition")) %>%
+  mutate(diff = rating.y - rating.x)
+
+joined %>%
+  filter(world == "typical" & activity == "predictable") %>%
+  print(n=Inf)
+
+## problem: 14, 19, 21
+
+# item   world    activity rating.x rating.y        diff
+# <fctr>  <fctr>      <fctr>    <dbl>    <dbl>       <dbl>
+#   1      1 typical predictable 98.15385 95.90909  -2.2447552
+# 2      2 typical predictable 87.14286 95.46154   8.3186813
+# 3      3 typical predictable 80.83333 81.81818   0.9848485
+# 4      4 typical predictable 87.00000 86.23077  -0.7692308
+# 5      5 typical predictable 89.23077 88.18182  -1.0489510
+# 6      6 typical predictable 86.71429 92.15385   5.4395604
+# 7      7 typical predictable 90.75000 96.27273   5.5227273
+# 8      8 typical predictable 84.38462 88.92308   4.5384615
+# 9      9 typical predictable 96.84615 92.63636  -4.2097902
+# 10     10 typical predictable 94.78571 90.07692  -4.7087912
+# 11     11 typical predictable 95.08333 95.36364   0.2803030
+# 12     12 typical predictable 89.30769 81.46154  -7.8461538
+# 13     13 typical predictable 93.15385 91.63636  -1.5174825
+# 14     14 typical predictable 48.14286 77.30769  29.1648352
+# 15     15 typical predictable 60.66667 61.45455   0.7878788
+# 16     16 typical predictable 89.46154 87.15385  -2.3076923
+# 17     17 typical predictable 73.07692 80.90909   7.8321678
+# 18     18 typical predictable 79.21429 81.84615   2.6318681
+# 19     19 typical predictable 85.16667 97.72727  12.5606061
+# 20     20 typical predictable 79.61538 86.69231   7.0769231
+# 21     21 typical predictable 86.69231 70.09091 -16.6013986
+# 22     22 typical predictable 84.28571 92.92308   8.6373626
+# 23     23 typical predictable 91.00000 89.90909  -1.0909091
+# 24     24 typical predictable 87.46154 91.92308   4.4615385
+
+joined %>%
+  filter(world == "typical" & activity == "optional") %>%
+  arrange(diff) %>%
+  print(n=Inf)
+
+## problem: 14 (too high), ??????
+
+# item   world activity rating.x rating.y        diff
+# <fctr>  <fctr>   <fctr>    <dbl>    <dbl>       <dbl>
+#   1     12 typical optional 64.53846 26.00000 -38.5384615
+# 2     23 typical optional 74.00000 39.07692 -34.9230769
+# 3     17 typical optional 65.28571 34.00000 -31.2857143
+# 4     16 typical optional 62.92308 32.45455 -30.4685315
+# 5     10 typical optional 77.41667 52.00000 -25.4166667
+# 6     21 typical optional 62.07143 41.61538 -20.4560440
+# 7     20 typical optional 50.92308 34.90909 -16.0139860
+# 8      7 typical optional 54.46154 41.15385 -13.3076923
+# 9     18 typical optional 61.85714 51.27273 -10.5844156
+# 10      2 typical optional 35.33333 27.00000  -8.3333333
+# 11      3 typical optional 34.53846 27.00000  -7.5384615
+# 12      1 typical optional 49.85714 42.61538  -7.2417582
+# 13     15 typical optional 31.38462 27.38462  -4.0000000
+# 14     19 typical optional 45.07692 44.30769  -0.7692308
+# 15      5 typical optional 17.00000 17.23077   0.2307692
+# 16     11 typical optional 44.38462 49.69231   5.3076923
+# 17      9 typical optional 44.50000 50.76923   6.2692308
+# 18     13 typical optional 50.78571 57.30769   6.5219780
+# 19     22 typical optional 33.41667 41.72727   8.3106061
+# 20      4 typical optional 14.23077 23.36364   9.1328671
+# 21      8 typical optional 41.76923 53.54545  11.7762238
+# 22     24 typical optional 50.84615 64.81818  13.9720280
+# 23      6 typical optional 49.33333 64.81818  15.4848485
+# 24     14 typical optional 47.08333 76.18182  29.0984848
+
+### 10, 23: optional too predictable with context
+
+
+joined %>%
+  filter(world == "atypical" & activity == "optional") %>%
+  arrange(diff) %>%
+  print(n=Inf)
+
+# item    world activity rating.x rating.y       diff
+# <fctr>   <fctr>   <fctr>    <dbl>    <dbl>      <dbl>
+#   1      7 atypical optional 67.28571 41.15385 -26.131868
+# 2     17 atypical optional 58.84615 34.00000 -24.846154
+# 3      2 atypical optional 50.53846 27.00000 -23.538462
+# 4     12 atypical optional 40.66667 26.00000 -14.666667
+# 5     15 atypical optional 41.92857 27.38462 -14.543956
+# 6     10 atypical optional 60.69231 52.00000  -8.692308
+# 7     16 atypical optional 41.08333 32.45455  -8.628788
+# 8      3 atypical optional 32.92857 27.00000  -5.928571
+# 9     23 atypical optional 44.85714 39.07692  -5.780220
+# 10     21 atypical optional 45.76923 41.61538  -4.153846
+# 11      9 atypical optional 52.92308 50.76923  -2.153846
+# 12     13 atypical optional 58.76923 57.30769  -1.461538
+# 13      5 atypical optional 15.92308 17.23077   1.307692
+# 14     18 atypical optional 47.53846 51.27273   3.734266
+# 15      1 atypical optional 30.92308 42.61538  11.692308
+# 16      4 atypical optional 11.66667 23.36364  11.696970
+# 17      8 atypical optional 41.16667 53.54545  12.378788
+# 18     20 atypical optional 21.83333 34.90909  13.075758
+# 19      6 atypical optional 43.61538 64.81818  21.202797
+# 20     24 atypical optional 42.00000 64.81818  22.818182
+# 21     19 atypical optional 20.71429 44.30769  23.593407
+# 22     22 atypical optional 17.84615 41.72727  23.881119
+# 23     11 atypical optional 18.07143 49.69231  31.620879
+# 24     14 atypical optional 42.53846 76.18182  33.643357
+
+joined %>%
+  filter(world == "atypical" & activity == "predictable") %>%
+  arrange(diff) %>%
+  print(n=Inf)
+
+### all OK?
+
+joined %>%
+  filter(world == "typical" & activity == "predictable") %>%
+#  filter(!(item %in% c(14,15,21))) %>%
+  ggplot(aes(rating.x, rating.y)) +
+  geom_point() +
+  geom_smooth(method="lm") +
+  xlim(40,100) +
+  ylim(40,100)
+
+
+###### check out 14, 15, 21

@@ -1,0 +1,119 @@
+# rm(list=ls())
+
+library(tidyverse)
+library(lme4)
+library(lattice)
+
+dataES <- read_csv("~/Shared/informationally-redundant-utterances/data/event_likelihood_simple/processed_data.csv"
+                 , col_types = cols(
+                   workerid = col_factor(levels = NULL),
+                   list = col_factor(levels = NULL),
+                   item = col_factor(levels = NULL),
+                   condition = col_factor(levels = NULL)
+                   )
+)
+
+glimpse(dataES)
+
+summary(dataES)
+
+dataES %>%
+  group_by(workerid) %>%
+  summarise(sd = sd(rating)) %>%
+  arrange(sd)
+
+dataES %>%
+  group_by(condition) %>%
+  summarise(avg = mean(rating))
+
+dataES %>%
+  group_by(item,condition) %>%
+  summarise(avg = mean(rating))
+
+dataES %>%
+  group_by(item,condition) %>%
+  filter(!(workerid %in% questionable)) %>%
+  summarise(avg = mean(rating)) %>%
+  spread(condition, avg) %>%
+  mutate(diff = predictable - optional) %>%
+  arrange(predictable) %>%
+  print(n = Inf)
+
+### 21: predictable not predictable enough
+### 14: optional way too predictable; predictable not quite predictable enough
+### 15: predictable not predictable enough
+
+dataES %>%
+  group_by(item,condition,workerid) %>%
+  filter(item %in% c(14,21,15)) %>%
+  summarise(min = min(rating)) %>%
+  print(n = Inf)
+
+model <- lmer(rating ~ condition + (condition|workerid) + (condition|item), data = dataES)
+summary(model)
+coef(model)
+
+# dataES %>%
+#   filter(workerid == "59c3cedd754a19000111ca76") %>%
+#   select(item,condition,rating) %>%
+#   print(n = Inf)
+# 
+# dataES %>%
+#   filter(workerid == "59c3cedd754a19000111ca76") %>%
+#   select(item,condition,rating) %>%
+#   group_by(condition) %>%
+#   summarise(avg = mean(rating)) %>%
+#   print(n = Inf)
+
+dataES %>%
+  ggplot(aes(item,rating)) + geom_boxplot(aes(color = condition))
+
+####################
+
+options(width=65,show.signif.stars=FALSE)
+
+options(error=recover)
+
+print(plot(confint(lmList(rating ~ condition | workerid, dataES), pooled = TRUE), order = 1))
+
+fm <- lmer(rating ~ condition + (condition|workerid), dataES)
+summary(fm)
+
+print(dotplot(ranef(fm), scales = list(x = list(relation = 'free')))[["workerid"]])
+
+####### 5960f59805f2df0001727876, 59c67e0259b3790001151013, 59944e16cf1d1700016ef985, 59c7e04c21454d000194c13e, 59c0e09a5c50560001df92b6, 599a81dfd4e8bd00017b98d5
+questionable <- c("5960f59805f2df0001727876", "59c67e0259b3790001151013", "59944e16cf1d1700016ef985", "59c7e04c21454d000194c13e", "59c0e09a5c50560001df92b6", "599a81dfd4e8bd00017b98d5")
+
+dataq <- dataES[!(dataES$workerid %in% questionable),]
+
+options(width=65,show.signif.stars=FALSE)
+
+options(error=recover)
+
+print(plot(confint(lmList(rating ~ condition | item, dataq), pooled = TRUE), order = 1))
+
+fms <- lmer(rating ~ condition + (condition|item), dataq)
+summary(fms)
+
+print(dotplot(ranef(fms), scales = list(x = list(relation = 'free')))[["item"]])
+
+####### 14, 5 look weird
+baditems <- c(14,5)
+
+dataES[dataES$item %in% baditems,]$event
+
+dataES %>%
+  filter(item %in% baditems) %>%
+  filter(!(workerid %in% questionable)) %>%
+  group_by(item, condition) %>%
+  summarize(avg = mean(rating))
+
+# item   condition      avg
+# <fctr>      <fctr>    <dbl>
+# 1      5    optional 18.26667
+# 2      5 predictable 84.66667
+# 3     14    optional 79.60000
+# 4     14 predictable 76.80000
+
+###### 14: no difference between conditions (both high)
+###### 5: too large difference?

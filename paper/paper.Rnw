@@ -1,0 +1,1923 @@
+\documentclass{sp}
+\usepackage{linguex}
+\usepackage{changepage}
+\usepackage{float}
+\usepackage{booktabs}
+\usepackage{subscript}
+\usepackage{subfiles}
+\usepackage{subfigure}
+\usepackage{tabularx}
+\usepackage{csquotes}
+\usepackage{soul}
+\usepackage{multirow}
+\usepackage{multicol}
+\usepackage{placeins}
+\usepackage{longtable}
+
+\newcommand{\dobib}{\bibliography{prag}}
+
+\setstcolor{red}
+
+\newcommand{\flag}[1]{\textcolor{red}{\bf #1}}
+\newcommand{\iflag}[1]{#1}
+\newcommand{\ignore}[1]{}
+\newenvironment{myenv}{\begin{adjustwidth}{1cm}{}}{\end{adjustwidth}}
+\newcommand{\change}[1]{\textcolor{green}{\bf #1}}
+\newcommand{\revised}[1]{\textcolor{blue}{#1}}
+\pdfauthor{Ekaterina Kravtchenko and Vera Demberg}
+\pdftitle{Informationally Redundant Event Descriptions Alter Prior Beliefs about Event Typicality}
+\pdfkeywords{Psycholinguistics; redundancy; context-dependent implicatures; accommodation}
+
+\title[]{Informationally Redundant Utterances Alter Prior Beliefs about Event Typicality
+}
+
+\author[]{}
+
+\begin{document}
+
+<<echo=FALSE, results="hide", cache=FALSE, message=FALSE, warning=FALSE>>=
+opts_knit$set(concordance = TRUE)
+
+rm(list=ls(all=TRUE))
+
+library(papaja)
+library(lmerTest)
+library(tidyverse)
+library(lme4)
+library(Hmisc)
+library(knitr)
+library(magick)
+library(rms)
+
+flag = function(x){
+  outputFormat = opts_knit$get("rmarkdown.pandoc.to")
+  if(outputFormat == 'latex')
+    paste0("\\textcolor{red}{",x,"}")
+  else if(outputFormat == 'html')
+    paste0("<font color='red'>",x,"</font>")
+  else
+    x
+}
+
+sc = function(x){
+  outputFormat = opts_knit$get("rmarkdown.pandoc.to")
+  if(outputFormat == 'latex')
+    paste0("\\textsc{",x,"}")
+  else if(outputFormat == 'html')
+    paste0("<span style='font-variant:small-caps;'>",x,"</span>")
+  else
+    x
+}
+
+printp_mine <- function (x, na_string = "") 
+{
+    if (x < .01) {
+      p <- printnum(x, digits = 3, gt1 = FALSE, zero = FALSE, na_string = na_string)
+    }
+    else {
+      p <- printnum(x, digits = 2, gt1 = FALSE, zero = FALSE, na_string = na_string)
+    }
+    p
+}
+
+set.seed(42)
+
+data <- read_csv("~/Shared/informationally-redundant-utterances/data/MTurk/new_processed_ratings.csv") %>% mutate_if(is.character,funs(factor(.)))
+
+demographics <- read_csv("~/Shared/informationally-redundant-utterances/data/MTurk/demographics.csv")
+
+data <- filter(data, world %in% c("typical","wonky"), eligible=="True")
+data <- droplevels(data)
+
+data$world <- fct_recode(data$world, ordinary="typical")
+data$activity <- fct_recode(data$activity, "non-habitual"="unpredictable", habitual="predictable")
+data$Qtype <- fct_recode(data$Qtype, "non-habitual"="unpredictable", habitual="predictable")
+
+data$cWorld <- ifelse(data$world=="ordinary",0.5,-0.5)
+data$cCondition <- ifelse(data$condition=="after",0.5,-0.5)
+data$experiment <- factor(data$experiment,levels=c("exclamation","ohyeah","period"))
+contrast <- matrix(c(-0.5,0.5,0,-1/3,-1/3,2/3),nrow=3)
+contrasts(data$experiment) <- contrast
+
+habitual.data <- filter(data,(activity=="habitual"|is.na(activity)),Qtype=="habitual")
+nonhabitual.data <- filter(data,(activity=="non-habitual"|is.na(activity)),Qtype=="non-habitual")
+
+exc.habitual <- filter(habitual.data, experiment=="exclamation")
+exc.nonhabitual <- filter(nonhabitual.data, experiment=="exclamation")
+oh.habitual <- filter(habitual.data, experiment=="ohyeah")
+oh.nonhabitual <- filter(nonhabitual.data, experiment=="ohyeah")
+period.habitual <- filter(habitual.data, experiment=="period")
+period.nonhabitual <- filter(nonhabitual.data, experiment=="period")
+@
+
+\renewcommand{\dobib}{}
+
+\maketitle
+
+\begin{abstract}
+Most theories of pragmatics and language processing predict that speakers avoid excessive informational redundancy. Informationally redundant utterances are, however, quite common in natural dialog. From a comprehension standpoint, it remains unclear how comprehenders interpret these utterances, and whether they make attempts to reconcile the `dips' in informational utility with expectations of `appropriate' or `rational' speaker informativity. We show that informationally redundant (overinformative) utterances can trigger pragmatic inferences that increase utterance utility in line with comprehender expectations. In a series of 3 studies, we look at utterances which refer to stereotyped event sequences describing common activities (\emph{scripts}). When comprehenders encounter utterances describing events that can be easily inferred from prior context, they interpret them as signifying that the event conveys new, unstated information (i.e.~an event otherwise assumed to be habitual, such as \emph{paying the cashier} when \emph{shopping}, is reinterpreted as non-habitual). Further, we show that the degree to which such inferences are triggered depends on the framing of the utterance. In the absence of prosodic or discourse markers indicating the speaker's specific intent to communicate the given information, such inferences are far less likely to arise. Overall, the results demonstrate that excessive conceptual redundancy leads to comprehenders revising the conversational common ground, in an effort to accommodate unexpected dips in informational utility.
+\end{abstract}
+
+\begin{keywords}
+  experimental pragmatics; redundancy; psycholinguistics; context-dependent implicatures; accommodation; overinformativeness; prosody.
+\end{keywords}
+
+\pagebreak
+
+\tableofcontents
+
+\pagebreak
+
+\listoftables
+
+\pagebreak
+
+\listoffigures
+
+\pagebreak
+
+\section{Introduction}\label{intro}
+
+\subfile{sections/intro.tex}
+
+\section{Related Work}\label{related-work}
+
+\subfile{sections/related.tex}
+
+\section{Experimental Procedure}\label{expintro}
+
+\subfile{sections/expintro.tex}
+
+\section{Experiment 1: Implicit Prosodic Emphasis}\label{exp1}
+
+<<exp 1 setup, cache=TRUE, echo=FALSE, message=FALSE, warning=FALSE>>=
+nTotal <- n_distinct(filter(demographics,experiment=="exclamation")$id)
+nExcluded <- n_distinct(filter(demographics,eligible=="False",experiment=="exclamation")$id)
+pExcluded <- round(n_distinct(filter(demographics,eligible=="False",experiment=="exclamation")$id)/n_distinct(filter(demographics,experiment=="exclamation")$id)*100,2)
+ageTemp <- median(filter(demographics,experiment=="exclamation",eligible=="True")$age)
+age <- ifelse(ageTemp==25,"18-25",ifelse(ageTemp==35,"26-35",ifelse(ageTemp==45,"36-45",ifelse(ageTemp==55,"46-55","56-65"))))
+gender <- round(n_distinct(filter(demographics,experiment=="exclamation",gender=="female",eligible=="True")$id)/n_distinct(filter(demographics,experiment=="exclamation",eligible=="True")$id)*100,1)
+
+prior_typ_pred_1 <- round(mean(filter(data,world=="ordinary",condition=="before",Qtype=="habitual",experiment=="exclamation")$rating),2)
+prior_atyp_pred_1 <- round(mean(filter(data,world=="wonky",condition=="before",Qtype=="habitual",experiment=="exclamation")$rating),2)
+updated_typ_pred_1 <- round(mean(filter(data,world=="ordinary",condition=="after",activity=="habitual",Qtype=="habitual",experiment=="exclamation")$rating),2)
+updated_atyp_pred_1 <- round(mean(filter(data,world=="wonky",condition=="after",activity=="habitual",Qtype=="habitual",experiment=="exclamation")$rating),2)
+
+habitual_exc <- lmer(rating ~ cWorld + cCondition + cWorld*cCondition + (cWorld+cCondition|id) + (cWorld*cCondition|story), exc.habitual)
+coefs <- summary(habitual_exc)$coefficients
+colnames(coefs) <- c("b","se","df","t","p")
+coefs[2,"p"] <- ifelse(coefs[2,"p"]<.001,.001,ifelse(coefs[2,"p"]<.01,.01,ifelse(coefs[2,"p"]<.05,.05,round(coefs[2,"p"],2))))
+coefs[3,"p"] <- ifelse(coefs[3,"p"]<.001,.001,ifelse(coefs[3,"p"]<.01,.01,ifelse(coefs[3,"p"]<.05,.05,round(coefs[3,"p"],2))))
+coefs[4,"p"] <- ifelse(coefs[4,"p"]<.001,.001,ifelse(coefs[4,"p"]<.01,.01,ifelse(coefs[4,"p"]<.05,.05,round(coefs[4,"p"],2))))
+w_pred_1 <- coefs[2,]
+c_pred_1 <- coefs[3,]
+wc_pred_1 <- coefs[4,]
+
+pred_typ_1 <- summary(lmer(rating ~ cCondition + (1|id) + (cCondition|story), filter(exc.habitual,world=="ordinary")))$coefficients
+pred_typ_1_b <- round(pred_typ_1[2,1],2)
+pred_typ_1_p <- ifelse(pred_typ_1[2,5]<.001,.001,ifelse(pred_typ_1[2,5]<.01,.01,ifelse(pred_typ_1[2,5]<.05,.05,round(pred_typ_1[2,5],2))))
+pred_atyp_1 <- summary(lmer(rating ~ cCondition + (1|id) + (cCondition|story), filter(exc.habitual,world=="wonky")))$coefficients
+pred_atyp_1_b <- round(pred_atyp_1[2,1],2)
+pred_atyp_1_p <- ifelse(pred_atyp_1[2,5]<.001,.001,ifelse(pred_atyp_1[2,5]<.01,.01,ifelse(pred_atyp_1[2,5]<.05,.05,round(pred_atyp_1[2,5],2))))
+
+prior_typ_opt_1 <- round(mean(filter(data,world=="ordinary",condition=="before",Qtype=="non-habitual",experiment=="exclamation")$rating),2)
+prior_atyp_opt_1 <- round(mean(filter(data,world=="wonky",condition=="before",Qtype=="non-habitual",experiment=="exclamation")$rating),2)
+updated_typ_opt_1 <- round(mean(filter(data,world=="ordinary",condition=="after",activity=="non-habitual",Qtype=="non-habitual",experiment=="exclamation")$rating),2)
+updated_atyp_opt_1 <- round(mean(filter(data,world=="wonky",condition=="after",activity=="non-habitual",Qtype=="non-habitual",experiment=="exclamation")$rating),2)
+
+nonhabitual_exc <- lmer(rating ~ cWorld + cCondition + cWorld*cCondition + (cWorld+cCondition|id) + (cWorld*cCondition|story), exc.nonhabitual)
+coefs <- summary(nonhabitual_exc)$coefficients
+colnames(coefs) <- c("b","se","df","t","p")
+coefs[2,"p"] <- ifelse(coefs[2,"p"]<.001,.001,ifelse(coefs[2,"p"]<.01,.01,ifelse(coefs[2,"p"]<.05,.05,round(coefs[2,"p"],2))))
+coefs[3,"p"] <- ifelse(coefs[3,"p"]<.001,.001,ifelse(coefs[3,"p"]<.01,.01,ifelse(coefs[3,"p"]<.05,.05,round(coefs[3,"p"],2))))
+coefs[4,"p"] <- ifelse(coefs[4,"p"]<.001,.001,ifelse(coefs[4,"p"]<.01,.01,ifelse(coefs[4,"p"]<.05,.05,round(coefs[4,"p"],2))))
+w_opt_1 <- coefs[2,]
+c_opt_1 <- coefs[3,]
+wc_opt_1 <- coefs[4,]
+
+h1 <- (nrow(summary(habitual_exc)$coefficients) + 1)/3
+h2 <- (nrow(summary(nonhabitual_exc)$coefficients) + 1)/3
+@
+
+We first test whether informationally redundant event descriptions trigger \textit{non-habituality} inferences when the utterance is apparently effortful, intentional, and attentionally prominent -- here signalled by an exclamation mark at the end of the utterance (this would disprove the "no inference" hypothesis). Intuitively, exclamatory intonation is a natural way of introducing something that may be noteworthy or unusual \citep{Rett2011}, without otherwise altering the semantic content of the utterance. When inferences are context-dependent \citep[and even if they are not; see][]{Degen2015b}, speakers generally provide multiple signals of their intended meaning, in order to make the inferences easier to compute for the comprehender. One would expect this to particularly be the case when the meaning of the utterance substantially violates expectations or previously held beliefs, as opposed to simply providing new but marginally expected (or at least unsurprising) information.
+
+We present naive participants with a limited number of brief `narratives,' which set up the common ground context, relationships between discourse participants, and some typical or atypical properties of their usual behavior (where relevant). Some of the narratives include brief dialogue between two discourse participants at the end (which may include informationally redundant or non-redundant event descriptions). After reading the narratives, participants rate how habitual they believe certain behaviors in the story to be. We expect participants who read informationally redundant event descriptions to infer that the utterance in fact signals that the event is relatively unexpected, or non-habitual (as only relatively unexpected events warrant explicit mention). In contrast, those participants who read non-redundant event descriptions should draw no such inferences.
+
+\subsection{Methods}
+
+\subsubsection{Participants}
+
+700 eligible participants (%
+<<echo=FALSE,results="asis">>=
+cat(paste0(nTotal))
+@
+ total; median age bracket %
+<<echo=FALSE,results="asis">>=
+cat(paste0(age))
+@
+; %
+<<echo=FALSE,results="asis">>=
+cat(paste0(gender))
+@
+\% female), were recruited on Amazon Mechanical Turk. The task was open only to workers located in the US, and with an approval rating of $\geq$ 95\%. All workers were asked to state their native childhood language (with no penalty for stating a language other than English, to encourage accurate reporting), age bracket (under 18, 18-25, 26-25, and up, in intervals of 10), and gender.  Those who did not indicate English, or listed their age as outside the interval of 18-65, were excluded from all analysis (%
+<<echo=FALSE,results="asis">>=
+cat(paste0(nExcluded))
+@
+; %
+<<echo=FALSE,results="asis">>=
+cat(paste0(pExcluded))
+@
+\%), with additional participants recruited to replace them.
+
+Those who did not provide accurate or plausible responses to the trial questions, all of which had a range of `valid' and `invalid' responses, were unable to proceed to the main task, and their data as a result was not recorded by the platform (e.g., those who rated the likelihood of 50\% heads on multiple fair coin flips as low, compared to other possible outcomes)\footnote{Since this data was not recorded, we cannot report on the number of participants who were unable to proceed to the main task.}. Participants were likewise unable to proceed in the study, or submit their results, without having answered all questions.
+
+\subsubsection{Design}
+
+The primary question of interest is whether informationally redundant utterances (in this case, descriptions of highly \textit{habitual} activities) are perceived as potentially violating conversational norms at face value, and whether they consequently trigger pragmatic inferences. These inferences should lead to the revision of common-ground beliefs about the \textit{habituality} of said activities (and so `repair' the violation, or dip in informational utility): 
+
+\ex. "John just came back from the grocery store. \textbf{He paid the cashier!}"
+
+The bolded utterance here, given a `default' or \textit{ordinary} common ground, is \textbf{\textit{informationally redundant}}.  We hypothesize that readers will infer that \textit{John} does \textit{not} habitually pay the cashier, as such a scenario would justify overt mention of \textit{John's} cashier-paying. The informational redundancy arises due to the high \textit{conceptual} (or \textit{event}) \textit{predictability} of \textit{paying the cashier}, and is resolved if one assumes that this activity is not as habitual, or predictable as initially assumed. 
+
+We also wanted to see whether the inference (that an activity is less habitual than would otherwise be expected) could be cancelled by manipulating the common ground.
+
+\paragraph{Common ground manipulation}
+
+The activity described becomes `non-habitual' given a \textit{wonky} common ground\footnote{We borrow the term \textit{wonky} from \citet{Degen2015a}, where it is similarly used to describe non-default common grounds, in which typical rules as to how things proceed are expected to not hold, and which comprehenders may assume when encountering otherwise pragmatically infelicitous utterances.} such as in \ref{shoplifter}, where the context suggests that typical assumptions (e.g., that some given individual would \textit{pay the cashier} when they \textit{go to the grocery store}) may not hold.  At that point, the activity description ceases to be informationally redundant, and the inference should therefore not arise. This control condition keeps the description itself constant and manipulates only the common ground. It thus ensures that any effect we measure is in fact due to the presence of informational redundancy, and verifies that comprehenders are sensitive to discourse context.
+
+\ex.\label{shoplifter} \textsc{Common Ground Context}: John habitually doesn't pay.  
+``John just came back from the grocery store.  \textbf{He paid the cashier!}"
+
+Finally, we wanted to provide a baseline for `typical' interpretation of non-redundant event descriptions; and to confirm that similarly structured descriptions of conventionally \textit{non-habitual} activities, as in \ref{apples}, do not provoke similar inferences (which would suggest a problem with the stimulus design or response measure). In \ref{apples}, the utterance is not informationally redundant, and is not expected to generate any specific inferences. We also wanted to confirm that the \textit{wonky} common ground in the previous example does not significantly affect the interpretation of conventionally \textit{non-habitual} event mentions (which would suggest that there is an unexpected effect of context manipulation on stimulus interpretation, in general): 
+
+\ex.\label{apples} \textsc{Context}: \textit{Ordinary} \textbf{or} John habitually doesn't pay.  
+``John just came back from the grocery store.  \textbf{He got some apples!}"
+
+As in \ref{shoplifter}, participants should draw no non-habituality inferences here, as the event described is not (typically) overly habitual. These conditions therefore provide a secondary control measure.
+
+\subsubsection{Materials}
+
+24 stimuli were constructed as brief stories/narratives, based on distinct stereotyped scripts or events. Each story had one of 2 context types (\textit{ordinary} vs. \textit{wonky} common ground, relative to the \textit{conventionally habitual} script activity). In all stories, declarative utterances, spoken by one of the discourse participants, described one of 2 types of script activities (\textit{conventionally habitual} vs. \textit{non-habitual}), making a total of 4 conditions\footnote{The complete list of stimuli can be found in our online repository: \url{https://osf.io/h5afr/?view_only=ff5859d3f33b485d95254395f95a52dc}}.
+
+\textit{Conventionally habitual} activities \ref{ex:habitual1} can normally be inferred simply from the `speaker' having invoked the script, while \textit{non-habitual} activities \ref{ex:nonhabitual1} can not be inferred automatically, as they may only occasionally occur as part of the script activity. To clarify, we are using the term \textit{conventionally habitual} to specify that the event almost invariably occurs as part of the event script (under normal conditions, and for typical individuals). Initial common ground was either \textit{ordinary} ([1a] below) with respect to the script, or \textit{wonky}, in that it implied the \textit{conventionally habitual} event was in fact unusual for the event participant ([1b] below): 
+
+\ex.\label{ex:habitual1} \centering\textsc{Conventionally Habitual Event}
+\vspace{-0.1cm}
+\centering
+
+\begin{longtable}{p{0.435\textwidth}|p{0.435\textwidth}}
+$[$1a$]$ John \textbf{often goes to the grocery store around the corner from his apartment\textsubscript{ordinary}} & $[$1b$]$ John \textbf{is typically broke, and doesn't usually pay when he goes to the grocery store\textsubscript{wonky}}          \\
+\hline
+\multicolumn{2}{p{0.9\textwidth}}{$[$2$]$ Recently, he came home from the store with groceries.  When he came in, he saw his roommate Susan in the hallway, and started talking to her about his trip to the store.  As he went to the kitchen to put his groceries away, Susan went to the living room, where their roommate Peter was watching TV.} \\
+\hline
+\multicolumn{2}{p{0.9\textwidth}}{$[$3$]$ Susan said to Peter: ``John just came back from the grocery store. $[$4$]$ He \textbf{paid the \mbox{cashier\textsubscript{habitual}}}!''}
+\end{longtable}
+\addtocounter{table}{-1}
+
+The context/common ground manipulation in [1b] was used in order to render the \textit{conventionally habitual} event unusual, or at least not habitual. Conventionally \textit{non-habitual} activities could not be automatically inferred from the script having been invoked: 
+
+\ex.\label{ex:nonhabitual1} \centering\textsc{Non-habitual Event}
+\vspace{-0.1cm}
+\centering
+
+\begin{longtable}{p{0.435\textwidth}|p{0.435\textwidth}}
+$[$1a$]$ John \textbf{often goes to the grocery store around the corner from his apartment\textsubscript{ordinary}} & $[$1b$]$ John \textbf{is typically broke, and doesn't usually pay when he goes to the grocery store\textsubscript{wonky}}          \\
+\hline
+\multicolumn{2}{p{0.9\textwidth}}{$[$2$]$ Recently, he came home from the store with groceries.  When he came in, he saw his roommate Susan in the hallway, and started talking to her about his trip to the store.  As he went to the kitchen to put his groceries away, Susan went to the living room, where their roommate Peter was watching TV.} \\
+\hline
+\multicolumn{2}{p{0.9\textwidth}}{$[$3$]$ Susan said to Peter: ``John just came back from the grocery store. $[$4$]$ He \textbf{got some \mbox{apples\textsubscript{non-habitual}}}!''}
+\end{longtable}
+\addtocounter{table}{-1}
+
+Participants saw either only the common ground \textit{context} [1] and \textit{discourse setup} [2] (without numbering or special formatting), which enabled us to collect estimates of how habitual activities are believed to be, based on the context alone (\textit{pre-utterance beliefs}); or the entire text, which enabled us to collect estimates of how habitual activities are believed to be, based on both the context \textit{and} the event description [4] (\textit{post-utterance beliefs}). 
+
+Following each passage, participants were queried as to how habitual they believed the \textit{conventionally habitual} and \textit{non-habitual} activities (as well as 2 other scenario-relevant distractor activities) were, for the person who was the subject of the discourse (the individual mentioned in the context [1] and event description [4]):
+
+1. How often do you think John usually \textit{pays the cashier}, when going shopping?
+2. How often do you think John usually \textit{gets apples}, when going shopping?
+3. How often do you think John usually goes to the grocery store?
+4. How often do you think Susan and Peter usually talk to each other?
+
+Each question could be responded to on a continuous sliding scale of `Never' to `Always' (see Fig. \ref{fig:slider}). The slider itself was not visible until the participant clicked on the point on the scale that they thought was most appropriate, to avoid having people default towards a particular value. After they responded to all questions, participants could submit their answers. Once they did, the next passage was displayed on a new screen. 
+
+12 of the stimuli included 3 discourse participants -- one of whom engaged in the script activity (\textit{John}), the second who learned from that participant that they engaged in it (\textit{Susan}), and the third to whom the second communicated this fact (\textit{Peter}). The other 12 only included two -- the subject of the discourse, who engaged in the activity (\textit{John}), and the second participant to whom they communicated this fact (\textit{Susan}). Compared to the example above, for instance, \textit{John} might instead be communicating directly to \textit{Susan}: ``\textit{I just got back from the grocery store. I paid the cashier!}". 
+
+The construction of these stimuli was constrained in several ways. The scripts (e.g., \textit{going shopping}) needed to be sufficiently complex to include multiple subactivities or subroutines, and there needed to be habitual as well as non-habitual subactivities (\textit{paying the cashier}, \textit{getting apples}). It needed to be possible for the script to play out without the habitual activity having taken place -- otherwise, the discourse would be incoherent, or the inference would not be drawn.  For example, one arguably cannot play \textit{tennis} at all, without using a \textit{racket}. There was also established common ground between all discourse participants, so that all were plausibly (from the point of view of the reader) aware of the typical habits of the discourse subject, particularly with regard to the activity described. Finally, the activities needed to be sufficiently stereotyped and (relatively) culturally invariant, so that participants could be expected to agree on what a script entailed, which activities were or weren't obligatory to the script sequence, etc..
+
+All stimuli were normed on 3 qualities (in separate tasks): whether the activity fell into the \textit{habitual} or \textit{non-habitual} activity bin; whether the common ground manipulation was effective; and whether participants found it plausible that the script could be engaged in without the \textit{habitual} activity.  For activity predictability norming, participants were asked to rate the habituality of the activity (on a 0-100 scale), with an arbitrary cutoff of 70 between activity types.  \textit{Non-habitual} activities were on average rated 48.0 (25.1-68.1), and \textit{habitual} activities were rated 87.8 (78.1-95.2).  For common ground norming, participants rated \textit{habitual} activities in \textit{ordinary} (mean 83.4 [72.2-96.9]) or \textit{wonky} common grounds (mean 39.2 [20.7-62.0]), with a within-item difference between the two of at least 15 points (mean difference 44.2; [19.8-72.9]); \textit{non-habitual} activities had to score below 70 regardless of common ground (mean 45.2; on average 10.7 points higher in the \textit{ordinary} common ground).  For plausibility norming, a statement in the form of `\textit{John \textbf{went shopping}, but didn't pay the cashier}' was rated as either \textit{coherent} (plausible) or \textit{incoherent} (implausible), with criteria being a majority of participants finding the statement coherent (\textit{habitual}: 91\% [67\%-100\%]; \textit{non-habitual}: 94\% [80\%-100\%]).
+
+\subsubsection{Measures}
+
+To measure comprehender beliefs regarding activity habituality, each story we presented was followed by 4 questions presented in random order, regarding activities mentioned in the story (including both conventionally \textit{habitual} and \textit{non-habitual} activities associated with the stimulus item). The questions were accompanied by sliding scales which ranged from \textit{Never} to \textit{Always}, where participants could select any point along the scale, as seen in Fig. \ref{fig:slider}.
+
+\begin{figure}
+\centering
+\includegraphics[width=\textwidth]{slider.png}
+\caption{\label{fig:slider} This is a slider, as used by experiment participants.}
+\end{figure}
+
+Prior to seeing any experimental items, participants were given several practice questions, unrelated to the experimental stimuli, which also used continuous sliding scales ranging from \textit{Never} to \textit{Always} (or similar). Unlike the experimental stimuli, these questions had `correct' answers -- such as \textit{How likely is a fair coin to come up heads twice, if flipped 10 times? (very unlikely--very likely)}. If participants provided responses that could not be judged reasonably accurate, they were asked to re-read the instructions, and respond again, before they were able to proceed. This ensured that they were able to follow instructions, and were less likely to guess randomly throughout the experiment. There were no `accurate' answers in the experiment itself. All points on the response scale were associated with a number ranging from 0 (\textit{Never}) to 100 (\textit{Always}). 
+
+\textbf{\textit{Pre-utterance beliefs}}, or baseline beliefs regarding activity habituality, were estimated from responses to stimuli presented without the activity description (see the next section for a more detailed explanation). The responses, aside from setting baseline measures (\textit{pre-utterance beliefs}) of activity habituality, also provide an additional norming measure for how likely it is that a particular activity would be engaged in, in the context of a given script. Thus, activities which are more or less habitual, within a given class, can be compared against one another.
+
+\textbf{\textit{Post-utterance beliefs}} regarding activity habituality were estimated from responses to stimuli which included the redundant or non-redundant utterance (activity description), or where the activity description/utterance was visible.
+
+\textbf{\textit{Belief change}} due to reading the activity description was determined by modeling the magnitude and direction of difference between \textit{pre-utterance beliefs} and \textit{post-utterance beliefs}.
+
+\subsubsection{Procedure}
+
+Participants were asked to read 6 experimental stimuli randomly selected out of the total of 24, as well as 4 filler items\footnote{To note, this means that each participant saw each manipulation only once, and the number of fillers was equal to the number of stimuli presented with dialogue.}.  Each condition was only presented once, as follows. 2 of the stories were presented without the dialogue and event description (context and setting up of common ground only), and 4 stories were presented in their entirety (context, setting up of common ground, and the dialogue/event description). The 2 partial stories allowed us to collect measures of \textit{pre-utterance beliefs} regarding activity habituality, and the 4 full stories gave us measures of \textit{post-utterance beliefs} conditioned on the event description. 
+
+\begin{longtable}{|p{0.48\linewidth}|p{0.48\linewidth}|}
+\hline
+\textsc{Subject 1}: \textit{pre-utterance} belief & \textsc{Subject 2} \textit{post-utterance} belief\\
+\hline
+\hline
+$<$context$>$ & $<$context$>$\\
+&\\
+$<$setting up of common ground$>$ & $<$setting up of common ground$>$\\
+&\\
+& $<$dialogue$>$\\
+\hline
+\textbf{\#. $<$habituality question$>$} & \textbf{\#. $<$habituality question$>$}\\
+\hline
+\end{longtable}
+
+\normalsize
+\addtocounter{table}{-1}
+
+The experiment thus employed a between-subject design for belief measures, where \textit{pre-utterance} and \textit{post-utterance} belief estimates for any given item were provided by different participants, to eliminate the possibility of participants conditioning their \textit{post-utterance} estimates not only on inferences made from the text, but also on their own \textit{pre-utterance} estimates\footnote{However, the results below largely mirror the results of a within-subjects version of the study reported in \citet{Kravtchenko2015}.}. The 4 filler stimuli had the same structure as above, but with the dialogue portion replaced by script-neutral utterances: ``\textit{You know, I'm really tired.}", ``\textit{Hey, do you know what time it is?}", ``\textit{So, what are you up to?}", or ``\textit{Have you heard the news today yet?}".
+
+\subsection{Results}
+
+For the purposes of determining whether participants made any inferences regarding activity habituality, we modeled \textit{belief change}, i.e. the difference between \textit{pre-utterance} and \textit{post-utterance} beliefs, or activity habituality estimates made with and without seeing the activity description. \textit{Conventionally habitual} and \textit{non-habitual} activities were modeled separately, as the conventionally \textit{non-habitual} activity was used primarily as a control, and manipulations of common ground context did not otherwise target it. All factors were effect/sum coded. 
+
+\subsubsection{\textit{Conventionally habitual} activities$\quad$('Paid the cashier')}
+
+\textit{Pre-utterance belief} ratings (obtained from participants who did not see the activity descriptions) showed that \textit{ordinary} context activities are perceived as highly habitual (%
+<<echo=FALSE,results="asis">>=
+cat(paste0(prior_typ_pred_1))
+@
+ on a 0-100 scale). As predicted, \textit{post-utterance belief} ratings (obtained from participants who saw the here, redundant, event descriptions) show lower habituality for the \textit{ordinary context} activities (%
+<<echo=FALSE,results="asis">>=
+cat(paste0(updated_typ_pred_1))
+@
+) than \textit{pre-utterance belief} ratings.
+
+\textit{Wonky} context activities (i.e., the condition where the \textit{conventionally habitual} activity was made non-habitual by the common ground context) are perceived as relatively non-habitual a priori (%
+<<echo=FALSE,results="asis">>=
+cat(paste0(prior_atyp_pred_1))
+@
+), and there was little change in participants' ratings (%
+<<echo=FALSE,results="asis">>=
+cat(paste0(updated_atyp_pred_1))
+@
+ for \textit{post-utterance beliefs}).  The results are illustrated in Fig. \ref{fig:exp1habitual}, using violin plots.
+
+A linear mixed effects regression analysis, the results of which are summarized in Table \ref{tab:exp1habitual}, showed that the interaction between context and belief measure is statistically reliable ($\beta$=%
+<<echo=FALSE,results="asis">>=
+cat(paste0(round(wc_pred_1["b"],2)))
+@
+, $p$<%
+<<echo=FALSE,results="asis">>=
+cat(paste0(printp_mine(wc_pred_1["p"])))
+@
+). This interaction is driven by lowered activity habituality ratings when the readers see the utterance in a \textit{ordinary} context ($\beta$=%
+<<echo=FALSE,results="asis">>=
+cat(paste0(pred_typ_1_b))
+@
+, $p$<%
+<<echo=FALSE,results="asis">>=
+cat(paste0(printp_mine(pred_typ_1_p)))
+@
+).
+
+In this experiment as well as the two following experiments, we used linear mixed effects models with the maximal random effects structure that was justified by the design. This means that we included by-subject random intercepts and slopes for common ground context (\textit{ordinary} / \textit{wonky}) and belief measure (\textit{pre-utterance} / \textit{post-utterance}), as well as by-item random intercepts and slopes for both factors and their interaction \citep{Barr2013}. By-subject random slopes for the interaction were not included in the model, because we did not have any repeated measures for the interaction (each subject saw each condition only once). \textit{P}-values were obtained using the Satterthwaite approximation for degrees of freedom, as implemented in the lmerTest package \citep{Kuznetsova2017}.
+
+<<exp1 hab tab, echo=FALSE, results="asis", cache=TRUE>>=
+coefs = as.data.frame(summary(habitual_exc)$coefficients[,c(1,2,4,5)])
+
+coefs[,1] = round(coefs[,1],digits=2)
+coefs[,2] = round(coefs[,2],digits=2)
+coefs[,3] = round(coefs[,3],digits=2)
+coefs[,4] = ifelse(coefs[,4] > .05, paste(round(coefs[,4],digits=1),sep=""),
+ifelse(coefs[,4] < .001,"\\textbf{<.001}",
+ifelse(coefs[,4] < .01, "\\textbf{<.01}", "\\textbf{<.05}")))
+
+colnames(coefs) = c("$\\beta$","SE($\\beta$)", "\\textbf{t}","\\textbf{p}")
+
+prednames = data.frame(PName=row.names(coefs),NewNames=c("Intercept","Common Ground: Ordinary","Belief: Post-utterance","Common Ground * Belief"))
+
+row.names(coefs) = prednames$NewNames[prednames$PName == row.names(coefs)]
+
+latex(coefs,file="",title="",table.env=TRUE,booktabs=TRUE,caption="Experiment 1: \\textit{conventionally habitual} (\\textit{cashier-paying}) activity analysis. This table shows the beta coefficients associated with each main effect in the model, as well as corresponding standard errors, \\emph{t}-values, and significance levels.",label="tab:exp1habitual",where="ht")
+@
+
+<<fig.width=8, fig.height=3.5, echo=FALSE, fig.cap="\\label{fig:exp1habitual}Experiment 1: \\textit{conventionally habitual} (\\textit{cashier-paying}) activity analysis. This plot shows changes in activity habituality estimates depending on whether the utterance is seen, as well as whether the context causes the utterance activity to be perceived as non-habitual. Violin plots, overlaid with box plots, show the distribution of estimates.  A violin plot is simply a smoothed and mirrored histogram: the fatter the distribution at a given point, the more instances there are of that particular activity habituality estimate.  Circles represent mean values. Arrows show statistically significant differences between \\textit{before/pre-utterance} and \\textit{after/post-utterance} ratings.", message=FALSE, warning=FALSE>>=
+habitual.data_plot <- exc.habitual
+habitual.data_plot$world <- factor(habitual.data_plot$world, levels=c("wonky", "ordinary"))
+habitual.data_plot$condition <- factor(habitual.data_plot$condition,levels=c("after","before"))
+# summary(habitual.data_plot)
+# str(habitual.data_plot)
+
+dodge <- position_dodge(width = 0.85)
+
+habitual.summary <- habitual.data_plot %>%
+  group_by(world, condition) %>%
+  summarise(val = mean(rating))
+
+# habitual.summary
+
+ggplot(habitual.data_plot, aes(x = world, y = rating, fill = condition)) + 
+  geom_violin(position = dodge, scale="count") +
+  geom_boxplot(width=.175, aes(fill=NULL,group=interaction(world,condition)), fill="white", position = dodge) +   
+  geom_point(data = habitual.summary, aes(y = val), position = dodge, shape=21) +
+  geom_line(data = habitual.summary[habitual.summary$world=="ordinary",], aes(y = val, group = world), position = position_dodge(width = 0.85), arrow = arrow(angle = 25, ends = "first", type = "closed", length = unit(0.1, "inches")))+
+  geom_line(data = habitual.summary[habitual.summary$world=="wonky",], aes(y = val, group = world), position = position_dodge(width = 0.85)) + 
+  ylab("Activity Habituality Estimate") +
+  xlab("Common Ground Context") +
+  theme(legend.position="right") +
+  scale_colour_manual(values = c("#000000", "#DF0101")) +
+  theme(axis.text.x = element_text(size=12, colour="black")) +
+  theme(axis.text.y = element_text(size=12, colour="black")) +
+  theme(axis.title.y=element_text(size=15))+
+  theme(axis.title.x=element_text(size=15))+ 
+  theme(legend.text=element_text(size=12,face = "italic"))+scale_fill_grey(start = 0.2, end = 0.8, name="Beliefs:", breaks=c("before","after"), labels=c("pre-utterance","post-utterance")) + scale_y_continuous(breaks = c(0,25,50,75,100), labels = c("0 (Never)", "25", "50", "75", "100 (Always)")) + scale_x_discrete(labels = c("wonky\n('non-payer')","ordinary")) + coord_flip()
+@
+
+These results show that, as predicted, when a \textit{conventionally habitual} activity is explicitly described in a \textit{ordinary} common ground context (i.e. a context in which the activity can be automatically inferred), many readers infer that the \textit{conventionally habitual} activity must in fact be \textit{non-habitual}; i.e., unusual for the individual who is the subject of the story, and therefore worth mentioning explicitly.
+
+\subsubsection{Conventionally \textit{non-habitual} activities$\quad$('Bought some apples')}
+
+There was little change in participants' ratings of conventionally \textit{non-habitual} activities from \textit{pre-utterance beliefs} to \textit{post-utterance beliefs} (\textit{ordinary}: %
+<<echo=FALSE,results="asis">>=
+cat(paste0(prior_typ_opt_1))
+@
+ to %
+<<echo=FALSE,results="asis">>=
+cat(paste0(updated_typ_opt_1))
+@
+; \textit{wonky}: %
+<<echo=FALSE,results="asis">>=
+cat(paste0(prior_atyp_opt_1))
+@
+ to %
+<<echo=FALSE,results="asis">>=
+cat(paste0(updated_atyp_opt_1))
+@
+), see Fig. \ref{fig:exp1nonhabitual}.
+
+A linear mixed effects regression analysis showed that estimates of activity habituality do not vary with the common ground context, nor are they conditioned on the utterance describing the activity (see Table \ref{tab:exp1nonhabitual}). This is also consistent with our predictions, and indicates both that the context alteration does not inherently cause a change in activity habituality estimates (regardless of how script-central the activity is), and that conventionally \textit{non-habitual} activities, given our \textit{ordinary} context, are not interpreted as less habitual when mentioned.
+
+<<exp1 unhab tab, echo=FALSE, results="asis", cache=TRUE>>=
+coefs = as.data.frame(summary(nonhabitual_exc)$coefficients[,c(1,2,4,5)])
+
+coefs[,1] = round(coefs[,1],digits=2)
+coefs[,2] = round(coefs[,2],digits=2)
+coefs[,3] = round(coefs[,3],digits=2)
+coefs[,4] = ifelse(coefs[,4] > .05, paste(round(coefs[,4],digits=1),sep=""),
+ifelse(coefs[,4] < .001,"\\textbf{<.001}",
+ifelse(coefs[,4] < .01, "\\textbf{<.01}", "\\textbf{<.05}")))
+
+colnames(coefs) = c("$\\beta$","SE($\\beta$)", "\\textbf{t}","\\textbf{p}")
+
+prednames = data.frame(PName=row.names(coefs),NewNames=c("Intercept","Common Ground: Ordinary","Belief: Post-utterance","Common Ground * Belief"))
+
+row.names(coefs) = prednames$NewNames[prednames$PName == row.names(coefs)]
+
+latex(coefs,file="",title="",table.env=TRUE,booktabs=TRUE,caption="Experiment 1: conventionally \\textit{non-habitual} (\\textit{apple-buying}) activity analysis.",label="tab:exp1nonhabitual",where="ht")
+@
+
+<<fig.width=8, fig.height=3.5, echo=FALSE, fig.cap="\\label{fig:exp1nonhabitual}Experiment 1: conventionally \\textit{non-habitual} (\\textit{apple-buying}) activity analysis.", message=FALSE, warning=FALSE>>=
+nonhabitual.data_plot <- exc.nonhabitual
+nonhabitual.data_plot$world <- factor(nonhabitual.data_plot$world, levels=c("wonky", "ordinary"))
+nonhabitual.data_plot$condition <- factor(nonhabitual.data_plot$condition,levels=c("after","before"))
+# summary(nonhabitual.data_plot)
+# str(nonhabitual.data_plot)
+
+dodge <- position_dodge(width = 0.85)
+
+nonhabitual.summary <- nonhabitual.data_plot %>%
+  group_by(world, condition) %>%
+  summarise(val = mean(rating))
+
+# nonhabitual.summary
+
+ggplot(nonhabitual.data_plot, aes(x = world, y = rating, fill = condition)) + 
+  geom_violin(position = dodge, width=0.5) +
+  geom_boxplot(width=.175, aes(fill=NULL,group=interaction(world,condition)), fill="white", position = dodge) +   
+  geom_point(data = nonhabitual.summary, aes(y = val), position = dodge, shape=21) +
+  geom_line(data = nonhabitual.summary[nonhabitual.summary$world=="ordinary",], aes(y = val, group = world), position = position_dodge(width = 0.85))+
+  geom_line(data = nonhabitual.summary[nonhabitual.summary$world=="wonky",], aes(y = val, group = world), position = position_dodge(width = 0.85)) + 
+  ylab("Activity Habituality Estimate") +
+  xlab("Common Ground Context") +
+  theme(legend.position="right") +
+  scale_colour_manual(values = c("#000000", "#DF0101")) +
+  theme(axis.text.x = element_text(size=12, colour="black")) +
+  theme(axis.text.y = element_text(size=12, colour="black")) +
+  theme(axis.title.y=element_text(size=15))+
+  theme(axis.title.x=element_text(size=15))+ 
+  theme(legend.text=element_text(size=12,face = "italic"))+scale_fill_grey(start = 0.2, end = 0.8, name="Beliefs:", breaks=c("before","after"), labels=c("pre-utterance","post-utterance")) + scale_y_continuous(breaks = c(0,25,50,75,100), labels = c("0 (Never)", "25", "50", "75", "100 (Always)")) + scale_x_discrete(labels = c("wonky\n('non-payer')","ordinary")) + coord_flip()
+@
+
+\subsection{Discussion}
+
+The results of the first experiment indicate that comprehenders do in fact perceive informational redundancy, in the form of mention of overly habitual activities, as a possible violation of conversational norms, and that they resolve this violation by reinterpreting the activities described as non-habitual. On average, participants rate conceptually predictable activities as less habitual if they see them mentioned overtly, in contrast to all other activities. In other words, comprehenders react to redundancy as they typically do to other apparent maxim violations -- by assuming an implied non-literal meaning, or alternate background world state, that resolves the apparent violation. This runs in some contradiction to the initial ambivalence \citet{Grice1975} expressed about the existence of such a constraint, and equivocal evidence from studies of informationally redundant nominal modification. 
+
+These results rule out the ``no inference" hypothesis outlined in Section \ref{how-might-comprehenders-react-to-informational-redundancy}, and raise two questions that we address in the following experiments, regarding the importance of (implicit) prosody, and that the speaker signaling intentionality of the activity description. First, an exclamation point may serve multiple purposes: it may signal surprise as to the course of described events, a speaker's intentionality in communicating a piece of information\footnote{I.e., the speaker displays clear and conscious intent to draw to the comprehender's attention the face that a given event occurred – as opposed to stalling for time, thinking of something to say, aborting a previously planned utterance, simply being uncooperative, and so forth.}, the importance and relevance of the information conveyed to the general discourse and comprehender's interests, and that the information preceding the exclamation point constitutes an ``encapsulated" message in its own right (rather than serving as a temporal or causal anchor\footnote{For example: \textit{He paid the cashier. Then he noticed it was his classmate.}}). Although it could be argued that the exclamation point \citep[often a signal of surprise;][]{Rett2011} forces a relative `non-habitual activity' interpretation independent of utterance informativity, this is not a likely explanation, as no signs of a similar effect are present in any of the other conditions. 
+
+Therefore, the first question is: how generalizable is the effect, and does the inference arise in contexts that do not implicitly signal the unexpectedness of the information conveyed (beyond the point that it is mentioned at all)? There is relatively little work on the question of which contextual cues specifically people employ in computing context-dependent inferences, as well as how these cues influence final interpretation. To test this, in Experiment 2 we use a discourse marker ("\textit{Oh yeah, and...}") which does not clearly signal surprise -- but does frame the event description as intentionally conveyed, as important/relevant to the topic at hand, and as an ``encapsulated message." 
+
+The second question raised is whether informational redundancy itself is sufficient to trigger such an inference. As mentioned previously, we start from the premise that rational speakers mention only that which cannot be automatically inferred by the comprehender. A charitable comprehender may be expected to expend considerable effort on rescuing the assumption of a cooperative or rational speaker \citep{Davidson1974}. If only activities under a certain threshold of habituality deserve mention, then comprehenders should conclude that the activity mentioned is relatively unusual, independently of any special emphasis on the utterance.  In general, most types of inferences, if they occur, should occur as long as the semantic content of the utterance remain constant (cf. the ``non-detachability" hypothesis).
+
+On the other hand, pragmatic inferences must be calculable \citep{Levinson2000}, and utterances must be attended to closely enough in the first place, before they may trigger any inferences \citep{Wilson2004}. That is, particularly for non-generalized (context-sensitive) inferences, the context must offer sufficient support that the reader can infer the speaker's intent, or a plausible background state, with reasonable certainty.  It's not clear, in our case, if the blatant redundancy itself constitutes sufficient support. Likewise, while rational speakers may only mention activities that are not easily inferable, forcing a comprehender to expend significant effort on recovering an utterance's intended meaning or significance is not particularly rational behavior. The degree of ``intentionality" on the part of the speaker (also signaled in our stimuli by the exclamation mark) may affect comprehenders' willingness and effort in guessing any implied meaning, as an utterance that may be a stray thought uttered without any specific intent may not be worth much effort to attempt to decipher (cf. the ``form sensitivity" hypothesis). To test whether informational redundancy itself is sufficient for triggering the inference, or whether some amount of discourse or prosodic emphasis is necessary for its generation, in Experiment 3 we present readers with the same task and stimuli, but strip the event description of prosodic or discourse cues signaling speaker intentionality.
+
+\section{Experiment 2: Implicit Discourse Support}\label{exp2}
+
+<<exp 2 setup, cache=TRUE, echo=FALSE, message=FALSE, warning=FALSE>>=
+nTotal <- n_distinct(filter(demographics,experiment=="ohyeah")$id)
+nExcluded <- n_distinct(filter(demographics,eligible=="False",experiment=="ohyeah")$id)
+pExcluded <- round(n_distinct(filter(demographics,eligible=="False",experiment=="ohyeah")$id)/n_distinct(filter(demographics,experiment=="ohyeah")$id)*100,2)
+ageTemp <- median(filter(demographics,experiment=="ohyeah",eligible=="True")$age)
+age <- ifelse(ageTemp==25,"18-25",ifelse(ageTemp==35,"26-35",ifelse(ageTemp==45,"36-45",ifelse(ageTemp==55,"46-55","56-65"))))
+gender <- round(n_distinct(filter(demographics,experiment=="ohyeah",gender=="female",eligible=="True")$id)/n_distinct(filter(demographics,experiment=="ohyeah",eligible=="True")$id)*100,1)
+
+prior_typ_pred_2 <- round(mean(filter(data,world=="ordinary",condition=="before",Qtype=="habitual",experiment=="ohyeah")$rating),2)
+prior_atyp_pred_2 <- round(mean(filter(data,world=="wonky",condition=="before",Qtype=="habitual",experiment=="ohyeah")$rating),2)
+updated_typ_pred_2 <- round(mean(filter(data,world=="ordinary",condition=="after",activity=="habitual",Qtype=="habitual",experiment=="ohyeah")$rating),2)
+updated_atyp_pred_2 <- round(mean(filter(data,world=="wonky",condition=="after",activity=="habitual",Qtype=="habitual",experiment=="ohyeah")$rating),2)
+
+habitual_oh <- lmer(rating ~ cWorld + cCondition + cWorld*cCondition + (cWorld+cCondition|id) + (cWorld*cCondition|story), filter(habitual.data,experiment=="ohyeah"))
+coefs <- summary(habitual_oh)$coefficients
+colnames(coefs) <- c("b","se","df","t","p")
+coefs[2,"p"] <- ifelse(coefs[2,"p"]<.001,.001,ifelse(coefs[2,"p"]<.01,.01,ifelse(coefs[2,"p"]<.05,.05,round(coefs[2,"p"],2))))
+coefs[3,"p"] <- ifelse(coefs[3,"p"]<.001,.001,ifelse(coefs[3,"p"]<.01,.01,ifelse(coefs[3,"p"]<.05,.05,round(coefs[3,"p"],2))))
+coefs[4,"p"] <- ifelse(coefs[4,"p"]<.001,.001,ifelse(coefs[4,"p"]<.01,.01,ifelse(coefs[4,"p"]<.05,.05,round(coefs[4,"p"],2))))
+w_pred_2 <- coefs[2,]
+c_pred_2 <- coefs[3,]
+wc_pred_2 <- coefs[4,]
+
+pred_typ_2 <- summary(lmer(rating ~ cCondition + (1|id) + (cCondition|story), filter(habitual.data,experiment=="ohyeah",world=="ordinary")))$coefficients
+pred_typ_2_b <- round(pred_typ_2[2,1],2)
+pred_typ_2_p <- ifelse(pred_typ_2[2,5]<.001,.001,ifelse(pred_typ_2[2,5]<.01,.01,ifelse(pred_typ_2[2,5]<.05,.05,round(pred_typ_2[2,5],2))))
+pred_atyp_2 <- summary(lmer(rating ~ cCondition + (1|id) + (cCondition|story), filter(habitual.data,experiment=="ohyeah",world=="wonky")))$coefficients
+pred_atyp_2_b <- round(pred_atyp_2[2,1],2)
+pred_atyp_2_p <- ifelse(pred_atyp_2[2,5]<.001,.001,ifelse(pred_atyp_2[2,5]<.01,.01,ifelse(pred_atyp_2[2,5]<.05,.05,round(pred_atyp_2[2,5],2))))
+
+prior_typ_opt_2 <- round(mean(filter(data,world=="ordinary",condition=="before",Qtype=="non-habitual",experiment=="ohyeah")$rating),2)
+prior_atyp_opt_2 <- round(mean(filter(data,world=="wonky",condition=="before",Qtype=="non-habitual",experiment=="ohyeah")$rating),2)
+updated_typ_opt_2 <- round(mean(filter(data,world=="ordinary",condition=="after",activity=="non-habitual",Qtype=="non-habitual",experiment=="ohyeah")$rating),2)
+updated_atyp_opt_2 <- round(mean(filter(data,world=="wonky",condition=="after",activity=="non-habitual",Qtype=="non-habitual",experiment=="ohyeah")$rating),2)
+
+nonhabitual_oh <- lmer(rating ~ cWorld + cCondition + cWorld*cCondition + (cWorld+cCondition|id) + (cWorld*cCondition|story), filter(nonhabitual.data,experiment=="ohyeah"))
+coefs <- summary(nonhabitual_oh)$coefficients
+colnames(coefs) <- c("b","se","df","t","p")
+coefs[2,"p"] <- ifelse(coefs[2,"p"]<.001,.001,ifelse(coefs[2,"p"]<.01,.01,ifelse(coefs[2,"p"]<.05,.05,round(coefs[2,"p"],2))))
+coefs[3,"p"] <- ifelse(coefs[3,"p"]<.001,.001,ifelse(coefs[3,"p"]<.01,.01,ifelse(coefs[3,"p"]<.05,.05,round(coefs[3,"p"],2))))
+coefs[4,"p"] <- ifelse(coefs[4,"p"]<.001,.001,ifelse(coefs[4,"p"]<.01,.01,ifelse(coefs[4,"p"]<.05,.05,round(coefs[4,"p"],2))))
+w_opt_2 <- coefs[2,]
+c_opt_2 <- coefs[3,]
+wc_opt_2 <- coefs[4,]
+
+h1 <- (nrow(summary(habitual_oh)$coefficients) + 1)/3
+h2 <- (nrow(summary(nonhabitual_oh)$coefficients) + 1)/3
+@
+
+The second experiment tests whether the effect, of informationally redundant event descriptions being interpreted by readers as signaling activity \textit{non-habituality}, is generalizable. To do so, we can replace the exclamation point with a non-prosodic discourse marker that signals speaker intentionality and utterance relevance (but crucially, not surprise). In this experiment, we frame the informationally redundant event description as an apparent recalling of information specifically intended to be mentioned to the comprehender, and implicitly relevant to the material just discussed: ``\textit{Oh yeah, and [he paid the cashier]}."
+
+This discourse marker does not clearly signal surprise at the activity having been engaged in, nor does it explicitly support the intended inference otherwise -- and in contrast to the exclamation mark in Exp.1, is a non-prosodic manipulation of the event description. We therefore consider it a good test of whether the effect generalizes beyond the specific context used in the first experiment.
+
+\subsection{Methods}
+
+\subsubsection{Participants}
+
+700 eligible participants (%
+<<echo=FALSE,results="asis">>=
+cat(paste0(nTotal))
+@
+ total; median age bracket %
+<<echo=FALSE,results="asis">>=
+cat(paste0(age))
+@
+; %
+<<echo=FALSE,results="asis">>=
+cat(paste0(gender))
+@
+\% female) were recruited on Amazon Mechanical Turk. %
+<<echo=FALSE,results="asis">>=
+cat(paste0(nExcluded))
+@
+ participants were excluded from analysis (%
+<<echo=FALSE,results="asis">>=
+cat(paste0(pExcluded))
+@
+\%), following the same exclusion criteria as applied in Experiment 1.
+
+\subsubsection{Design}
+
+The design of this experiment was motivated by the same considerations as Experiment 1 -- with the exception of how the event description was framed. Instead of marking the target utterance with an exclamation mark, we framed the same utterance as a piece of information the speaker had just recalled, apparently having previously intended to mention it to the comprehender:
+
+\ex. ``John just came back from the grocery store.  \textbf{Oh yeah, and he paid the cashier.}"
+
+The \textit{oh yeah...} discourse marker does not conventionally signal surprise, and therefore does not potentially signal the specific inference that we are testing for. It does, however, imply speaker intent behind conveying precisely this message, the importance and relevance of the message to the current discourse and comprehender -- as well as that the message stands alone, and is not intended to simply serve as causal or temporal scaffolding for a further message/event.
+
+\subsubsection{Materials}
+
+The same 24 stimuli were used as in Exp. 1. In this case, the critical utterance was prepended by ``\textit{Oh yeah, and...}":
+
+\ex.\label{ex:habitual2} \centering\textsc{Ordinary context}
+\vspace{-0.1cm}
+\centering
+
+\begin{longtable}{p{0.435\textwidth}|p{0.435\textwidth}}
+\multicolumn{2}{p{0.9\textwidth}}{$[$1$]$ John often goes to the grocery store around the corner from his apartment.} \\
+\hline
+\multicolumn{2}{p{0.9\textwidth}}{$[$2$]$ Recently, he came home from the store with groceries.  When he came in, he saw his roommate Susan in the hallway, and started talking to her about his trip to the store.  As he went to the kitchen to put his groceries away, Susan went to the living room, where their roommate Peter was watching TV.} \\
+\hline
+\multicolumn{2}{p{0.9\textwidth}}{$[$3$]$ Susan said to Peter: ``John just came back from the grocery store.} \\
+\hline
+$[$4a$]$ \textbf{Oh yeah, and} he \textit{paid the \mbox{cashier\textsubscript{habitual}}}.'' & $[$4b$]$ \textbf{Oh yeah, and} he \textit{got some apples\textsubscript{non-habitual}}.''
+\end{longtable}
+\addtocounter{table}{-1}
+
+\subsubsection{Procedure}
+
+The procedure was identical to that of Exp. 1.
+
+\subsubsection{Measures}
+
+The same response measures as in Exp. 1 were used to estimate \textit{pre-utterance beliefs} and \textit{post-utterance beliefs}. 
+
+\subsection{Results}
+
+
+As in Experiment 1, to determine whether participants made inferences regarding activity habituality, we modeled \textit{belief change} - the difference between \textit{pre-utterance} and \textit{post-utterance} beliefs. \textit{Conventionally habitual} and conventionally \textit{non-habitual} activities were again modeled separately. All factors were effect/sum coded. 
+
+\subsubsection{\textit{Conventionally habitual} activities}
+
+As we predicted, \textit{pre-utterance belief} ratings for \textit{ordinary context} activities showed that these activities are judged to be highly habitual (%
+<<echo=FALSE,results="asis">>=
+cat(paste0(prior_typ_pred_2))
+@
+). As in Experiment 1, \textit{post-utterance beliefs} about the habituality of \textit{ordinary context} activities were significantly lower (%
+<<echo=FALSE,results="asis">>=
+cat(paste0(updated_typ_pred_2))
+@
+), and \textit{wonky} common ground estimates remained stable (%
+<<echo=FALSE,results="asis">>=
+cat(paste0(prior_atyp_pred_2))
+@
+ \textit{pre-utterance} to %
+<<echo=FALSE,results="asis">>=
+cat(paste0(updated_atyp_pred_2))
+@
+ \textit{post-utterance}).
+
+A linear mixed effects regression analysis, the results of which are summarized in Table \ref{tab:exp2habitual}, showed an interaction between context and belief measure ($\beta$=%
+<<echo=FALSE,results="asis">>=
+cat(paste0(round(wc_pred_2["b"],2)))
+@
+, $p$<%
+<<echo=FALSE,results="asis">>=
+cat(paste0(printp_mine(wc_pred_2["p"])))
+@
+), which is driven by lowered activity habituality ratings when the readers see the utterance in a ordinary context ($\beta$=%
+<<echo=FALSE,results="asis">>=
+cat(paste0(pred_typ_2_b))
+@
+, $p$<%
+<<echo=FALSE,results="asis">>=
+cat(paste0(printp_mine(pred_typ_2_p)))
+@
+). All model specifications are as described in Exp. 1.  A plot illustrating the interaction can be seen in Fig. \ref{fig:exp2habitual}, which shows a pattern of results that is remarkably quantitatively and qualitatively similar to that of Exp. 1.  Exp. 1 and 2 are compared directly, and to Exp. 3, in Section \ref{cross-experiment-analysis-and-gradience-of-the-non-habituality-effect}.
+
+<<exp2 hab tab, echo=FALSE, results="asis", cache=TRUE>>=
+coefs = as.data.frame(summary(habitual_oh)$coefficients[,c(1,2,4,5)])
+
+coefs[,1] = round(coefs[,1],digits=2)
+coefs[,2] = round(coefs[,2],digits=2)
+coefs[,3] = round(coefs[,3],digits=2)
+coefs[,4] = ifelse(coefs[,4] > .05, paste(round(coefs[,4],digits=1),sep=""),
+ifelse(coefs[,4] < .001,"\\textbf{<.001}",
+ifelse(coefs[,4] < .01, "\\textbf{<.01}", "\\textbf{<.05}")))
+
+colnames(coefs) = c("$\\beta$","SE($\\beta$)", "\\textbf{t}","\\textbf{p}")
+
+prednames = data.frame(PName=row.names(coefs),NewNames=c("Intercept","Common Ground: Ordinary","Belief: Post-utterance","Common Ground * Belief"))
+
+row.names(coefs) = prednames$NewNames[prednames$PName == row.names(coefs)]
+
+latex(coefs,file="",title="",table.env=TRUE,booktabs=TRUE,caption="Experiment 2: \\textit{conventionally habitual} (\\textit{cashier-paying}) activity analysis.",label="tab:exp2habitual",where="ht")
+@
+
+<<fig.width=8, fig.height=3.5, echo=FALSE, fig.cap="\\label{fig:exp2habitual}Experiment 2: \\textit{conventionally habitual} (\\textit{cashier-paying}) activity analysis.", message=FALSE, warning=FALSE>>=
+habitual.data_plot <- oh.habitual
+habitual.data_plot$world <- factor(habitual.data_plot$world, levels=c("wonky", "ordinary"))
+habitual.data_plot$condition <- factor(habitual.data_plot$condition,levels=c("after","before"))
+# summary(habitual.data_plot)
+# str(habitual.data_plot)
+
+dodge <- position_dodge(width = 0.85)
+
+habitual.summary <- habitual.data_plot %>%
+  group_by(world, condition) %>%
+  summarise(val = mean(rating))
+
+# habitual.summary
+
+ggplot(habitual.data_plot, aes(x = world, y = rating, fill = condition)) + 
+  geom_violin(position = dodge) +
+  geom_boxplot(width=.175, aes(fill=NULL,group=interaction(world,condition)), fill="white", position = dodge) +   
+  geom_point(data = habitual.summary, aes(y = val), position = dodge, shape=21) +
+  geom_line(data = habitual.summary[habitual.summary$world=="ordinary",], aes(y = val, group = world), position = position_dodge(width = 0.85), arrow = arrow(angle = 25, ends = "first", type = "closed", length = unit(0.1, "inches")))+
+  geom_line(data = habitual.summary[habitual.summary$world=="wonky",], aes(y = val, group = world), position = position_dodge(width = 0.85)) + 
+  ylab("Activity Habituality Estimate") +
+  xlab("Common Ground Context") +
+  theme(legend.position="right") +
+  scale_colour_manual(values = c("#000000", "#DF0101")) +
+  theme(axis.text.x = element_text(size=12, colour="black")) +
+  theme(axis.text.y = element_text(size=12, colour="black")) +
+  theme(axis.title.y=element_text(size=15))+
+  theme(axis.title.x=element_text(size=15))+ 
+  theme(legend.text=element_text(size=12,face = "italic"))+scale_fill_grey(start = 0.2, end = 0.8, name="Beliefs:", breaks=c("before","after"), labels=c("pre-utterance","post-utterance")) + scale_y_continuous(breaks = c(0,25,50,75,100), labels = c("0 (Never)", "25", "50", "75", "100 (Always)")) + scale_x_discrete(labels = c("wonky\n('non-payer')","ordinary")) + coord_flip()
+@
+
+These results support our prediction that readers perceive informationally redundant utterances as abnormal, and make pragmatic inferences (of activity \textit{non-habituality}), regardless of whether implicit prosody or other markers conventionally associated with surprisal are present.
+
+\subsubsection{Conventionally \textit{non-habitual} activities}
+
+In contrast to Experiment 1, there was some increase in participants' ratings of conventionally \textit{non-habitual} activities from \textit{pre-utterance beliefs} (\textit{ordinary}: %
+<<echo=FALSE,results="asis">>=
+cat(paste0(prior_typ_opt_2))
+@
+ to %
+<<echo=FALSE,results="asis">>=
+cat(paste0(updated_typ_opt_2))
+@
+; \textit{wonky}: %
+<<echo=FALSE,results="asis">>=
+cat(paste0(prior_atyp_opt_2))
+@
+ to %
+<<echo=FALSE,results="asis">>=
+cat(paste0(updated_atyp_opt_2))
+@
+), see Fig. \ref{fig:exp2nonhabitual}.
+
+A linear mixed effects regression analysis showed that estimates of activity habituality increase slightly when the utterance describing the conventionally \textit{non-habitual} activity (see Table \ref{tab:exp2nonhabitual}) is visible ($\beta$=%
+<<echo=FALSE,results="asis">>=
+cat(paste0(round(c_opt_2["b"],2)))
+@
+, $p$<%
+<<echo=FALSE,results="asis">>=
+cat(paste0(printp_mine(c_opt_2["p"])))
+@
+).
+
+While not identical to the results of the first experiment (which showed a slight numerical increase in rating only), this is consistent with a peripheral prediction we made prior to running the experiments: simply mentioning a non-habitual, or non-redundant activity may increase the perception of its habituality, by providing some evidence that, e.g., \textit{John} is at least an occasional \textit{apple purchaser}. As the direction of this effect does not change our interpretation of the results, we leave it aside for future exploration.
+
+<<exp2 unhab tab, echo=FALSE, results="asis", cache=TRUE>>=
+coefs = as.data.frame(summary(nonhabitual_oh)$coefficients[,c(1,2,4,5)])
+
+coefs[,1] = round(coefs[,1],digits=2)
+coefs[,2] = round(coefs[,2],digits=2)
+coefs[,3] = round(coefs[,3],digits=2)
+coefs[,4] = ifelse(coefs[,4] > .05, paste(round(coefs[,4],digits=1),sep=""),
+ifelse(coefs[,4] < .001,"\\textbf{<.001}",
+ifelse(coefs[,4] < .01, "\\textbf{<.01}", "\\textbf{<.05}")))
+
+colnames(coefs) = c("$\\beta$","SE($\\beta$)", "\\textbf{t}","\\textbf{p}")
+
+prednames = data.frame(PName=row.names(coefs),NewNames=c("Intercept","Common Ground: Ordinary","Belief: Post-utterance","Common Ground * Belief"))
+
+row.names(coefs) = prednames$NewNames[prednames$PName == row.names(coefs)]
+
+latex(coefs,file="",title="",table.env=TRUE,booktabs=TRUE,caption="Experiment 2: conventionally \\textit{non-habitual} (\\textit{apple-buying}) activity analysis.",label="tab:exp2nonhabitual",where="ht")
+@
+
+<<fig.width=8, fig.height=3.5, echo=FALSE, cache=TRUE, fig.cap="\\label{fig:exp2nonhabitual}Experiment 2: conventionally \\textit{non-habitual} (\\textit{apple-buying}) activity analysis.", message=FALSE, warning=FALSE>>=
+nonhabitual.data_plot <- oh.nonhabitual
+nonhabitual.data_plot$world <- factor(nonhabitual.data_plot$world, levels=c("wonky", "ordinary"))
+nonhabitual.data_plot$condition <- factor(nonhabitual.data_plot$condition,levels=c("after","before"))
+# summary(nonhabitual.data_plot)
+# str(nonhabitual.data_plot)
+
+dodge <- position_dodge(width = 0.85)
+
+nonhabitual.summary <- nonhabitual.data_plot %>%
+  group_by(world, condition) %>%
+  summarise(val = mean(rating))
+
+# nonhabitual.summary
+
+ggplot(nonhabitual.data_plot, aes(x = world, y = rating, fill = condition)) + 
+  geom_violin(position = dodge, width=0.5) +
+  geom_boxplot(width=.175, aes(fill=NULL,group=interaction(world,condition)), fill="white", position = dodge) +   
+  geom_point(data = nonhabitual.summary, aes(y = val), position = dodge, shape=21) +
+  geom_line(data = nonhabitual.summary[nonhabitual.summary$world=="ordinary",], aes(y = val, group = world), position = position_dodge(width = 0.85), arrow = arrow(angle = 25, ends = "first", type = "closed", length = unit(0.1, "inches")))+
+  geom_line(data = nonhabitual.summary[nonhabitual.summary$world=="wonky",], aes(y = val, group = world), position = position_dodge(width = 0.85), arrow = arrow(angle = 25, ends = "first", type = "closed", length = unit(0.1, "inches"))) + 
+  ylab("Activity Habituality Estimate") +
+  xlab("Common Ground Context") +
+  theme(legend.position="right") +
+  scale_colour_manual(values = c("#000000", "#DF0101")) +
+  theme(axis.text.x = element_text(size=12, colour="black")) +
+  theme(axis.text.y = element_text(size=12, colour="black")) +
+  theme(axis.title.y=element_text(size=15))+
+  theme(axis.title.x=element_text(size=15))+ 
+  theme(legend.text=element_text(size=12,face = "italic"))+scale_fill_grey(start = 0.2, end = 0.8, name="Beliefs:", breaks=c("before","after"), labels=c("pre-utterance","post-utterance")) + scale_y_continuous(breaks = c(0,25,50,75,100), labels = c("0 (Never)", "25", "50", "75", "100 (Always)")) + scale_x_discrete(labels = c("wonky\n('non-payer')","ordinary")) + coord_flip()
+@
+
+\subsection{Discussion}
+
+Together with Experiment 1, these results show that readers find informational redundancy abnormal at face value, and make pragmatic inferences to reconcile apparent informational redundancy with their expectations of utterance utility. This further disconfirms the "no inference" hypothesis, and indicates that the effect is generalizable, and not dependent on conventional indicators of activity non-habituality, such as implicit exclamatory intonation.
+
+The results of Experiments 1 and 2, however, do not permit us to distinguish between the 2nd and 3rd hypotheses ("non-detachability" vs. "form sensitivity"), as they leave open the question of whether the \textit{non-habituality} effect is dependent on some degree of intentionality-signaling, or applies independently of discourse context. Experiment 2 provides some support for the "non-detachability" hypothesis, as the magnitude of the inference remains entirely stable, even as the form of intention or relevance signaling is substantially changed.
+
+If the effect is dependent on some amount of relevance or intentionality signaling, this would support the "form sensitivity" hypothesis over the "non-detachability" hypothesis, by suggesting one of the following. Comprehenders may be relatively unwilling to expend substantial effort on decoding a plausible inference in the absence of evidence that doing so is worth it, and that the utterance has some amount of import. Similarly, they may stop short in their efforts, on the assumption that it is more likely that speakers would occasionally violate this particular conversational maxim, than that they would provide insufficient evidence that the utterance communicates something of note. Finally, they may simply be generally tolerant of informational redundancy, unless context suggests that the redundancy has a `point.' Experiment 3 presents the same task and materials to participants, but removes the prosody or discourse markers that signal relevance and speaker intent.
+
+\section{Experiment 3: Removing Contextual Support}\label{exp3}
+
+<<exp 3 setup, cache=TRUE, echo=FALSE, message=FALSE, warning=FALSE>>=
+nTotal <- n_distinct(filter(demographics,experiment=="period")$id)
+nExcluded <- n_distinct(filter(demographics,eligible=="False",experiment=="period")$id)
+pExcluded <- round(n_distinct(filter(demographics,eligible=="False",experiment=="period")$id)/n_distinct(filter(demographics,experiment=="period")$id)*100,2)
+ageTemp <- median(filter(demographics,experiment=="period",eligible=="True")$age)
+age <- ifelse(ageTemp==25,"18-25",ifelse(ageTemp==35,"26-35",ifelse(ageTemp==45,"36-45",ifelse(ageTemp==55,"46-55","56-65"))))
+gender <- round(n_distinct(filter(demographics,experiment=="period",gender=="female",eligible=="True")$id)/n_distinct(filter(demographics,experiment=="period",eligible=="True")$id)*100,1)
+
+prior_typ_pred_3 <- round(mean(filter(data,world=="ordinary",condition=="before",Qtype=="habitual",experiment=="period")$rating),2)
+prior_atyp_pred_3 <- round(mean(filter(data,world=="wonky",condition=="before",Qtype=="habitual",experiment=="period")$rating),2)
+updated_typ_pred_3 <- round(mean(filter(data,world=="ordinary",condition=="after",activity=="habitual",Qtype=="habitual",experiment=="period")$rating),2)
+updated_atyp_pred_3 <- round(mean(filter(data,world=="wonky",condition=="after",activity=="habitual",Qtype=="habitual",experiment=="period")$rating),2)
+
+habitual_per <- lmer(rating ~ cWorld + cCondition + cWorld*cCondition + (cWorld+cCondition|id) + (cWorld*cCondition|story), filter(habitual.data,experiment=="period"))
+coefs <- summary(habitual_per)$coefficients
+colnames(coefs) <- c("b","se","df","t","p")
+coefs[2,"p"] <- ifelse(coefs[2,"p"]<.001,.001,ifelse(coefs[2,"p"]<.01,.01,ifelse(coefs[2,"p"]<.05,.05,round(coefs[2,"p"],2))))
+coefs[3,"p"] <- ifelse(coefs[3,"p"]<.001,.001,ifelse(coefs[3,"p"]<.01,.01,ifelse(coefs[3,"p"]<.05,.05,round(coefs[3,"p"],2))))
+coefs[4,"p"] <- ifelse(coefs[4,"p"]<.001,.001,ifelse(coefs[4,"p"]<.01,.01,ifelse(coefs[4,"p"]<.05,.05,round(coefs[4,"p"],2))))
+w_pred_3 <- coefs[2,]
+c_pred_3 <- coefs[3,]
+wc_pred_3 <- coefs[4,]
+
+pred_typ_3 <- summary(lmer(rating ~ cCondition + (1|id) + (cCondition|story), filter(habitual.data,experiment=="period",world=="ordinary")))$coefficients
+pred_typ_3_b <- round(pred_typ_3[2,1],2)
+pred_typ_3_p <- ifelse(pred_typ_3[2,5]<.001,.001,ifelse(pred_typ_3[2,5]<.01,.01,ifelse(pred_typ_3[2,5]<.05,.05,round(pred_typ_3[2,5],2))))
+pred_atyp_3 <- summary(lmer(rating ~ cCondition + (1|id) + (cCondition|story), filter(habitual.data,experiment=="period",world=="wonky")))$coefficients
+pred_atyp_3_b <- round(pred_atyp_3[2,1],2)
+pred_atyp_3_p <- ifelse(pred_atyp_3[2,5]<.001,.001,ifelse(pred_atyp_3[2,5]<.01,.01,ifelse(pred_atyp_3[2,5]<.05,.05,round(pred_atyp_3[2,5],2))))
+
+prior_typ_opt_3 <- round(mean(filter(data,world=="ordinary",condition=="before",Qtype=="non-habitual",experiment=="period")$rating),2)
+prior_atyp_opt_3 <- round(mean(filter(data,world=="wonky",condition=="before",Qtype=="non-habitual",experiment=="period")$rating),2)
+updated_typ_opt_3 <- round(mean(filter(data,world=="ordinary",condition=="after",activity=="non-habitual",Qtype=="non-habitual",experiment=="period")$rating),2)
+updated_atyp_opt_3 <- round(mean(filter(data,world=="wonky",condition=="after",activity=="non-habitual",Qtype=="non-habitual",experiment=="period")$rating),2)
+
+nonhabitual_per <- lmer(rating ~ cWorld + cCondition + cWorld*cCondition + (cWorld+cCondition|id) + (cWorld*cCondition|story), filter(nonhabitual.data,experiment=="period"))
+coefs <- summary(nonhabitual_per)$coefficients
+colnames(coefs) <- c("b","se","df","t","p")
+coefs[2,"p"] <- ifelse(coefs[2,"p"]<.001,.001,ifelse(coefs[2,"p"]<.01,.01,ifelse(coefs[2,"p"]<.05,.05,round(coefs[2,"p"],2))))
+coefs[3,"p"] <- ifelse(coefs[3,"p"]<.001,.001,ifelse(coefs[3,"p"]<.01,.01,ifelse(coefs[3,"p"]<.05,.05,round(coefs[3,"p"],2))))
+coefs[4,"p"] <- ifelse(coefs[4,"p"]<.001,.001,ifelse(coefs[4,"p"]<.01,.01,ifelse(coefs[4,"p"]<.05,.05,round(coefs[4,"p"],2))))
+w_opt_3 <- coefs[2,]
+c_opt_3 <- coefs[3,]
+wc_opt_3 <- coefs[4,]
+
+h1 <- (nrow(summary(habitual_per)$coefficients) + 1)/3
+h2 <- (nrow(summary(nonhabitual_per)$coefficients) + 1)/3
+@
+
+To investigate whether explicitly signaling speaker intent has an influence on the strength of the \textit{non-habituality} effect, we designed a third experiment which differs only in the absence of special prosodic or discourse markers, or evidence for the relevance/informativity of the activity description. Our prediction is that while the effect may be attenuated somewhat, comprehenders should nevertheless make a measurable attempt to compensate for a violation in expected informational utility (i.e., while there may be some degree of "form sensitivity," the inference should nevertheless arise).
+
+\subsection{Methods}
+
+\subsubsection{Participants}
+
+700 eligible participants (%
+<<echo=FALSE,results="asis">>=
+cat(paste0(nTotal))
+@
+ total; median age bracket %
+<<echo=FALSE,results="asis">>=
+cat(paste0(age))
+@
+; %
+<<echo=FALSE,results="asis">>=
+cat(paste0(gender))
+@
+\% female) were recruited on Amazon Mechanical Turk. %
+<<echo=FALSE,results="asis">>=
+cat(paste0(nExcluded))
+@
+ participants were excluded from analysis (%
+<<echo=FALSE,results="asis">>=
+cat(paste0(pExcluded))
+@
+\%), following the same exclusion criteria as applied as in previous experiments.
+
+\subsubsection{Design}
+
+The design was motivated by the same factors as Experiments 1 and 2, but all markers of relevance were removed from the activity description: 
+
+\ex. "John just came back from the grocery store.  \textbf{He paid the cashier.}"
+
+In this case, there is no clear signal indicating the relevance or informativity of the utterance. One could plausibly imagine the event description, in this case, to be `filler material,' only semi-intentionally uttered while the speaker is planning what to say next, or as (planned, but then possibly abandoned) temporal or causal scaffolding for a more important event to be described, such as in:
+
+\ex.\label{anchor} "John just came back from the grocery store.  He paid the cashier.  \textit{He then realized he'd forgotten his driver's license!}"
+
+\subsubsection{Materials}
+
+The same 24 stimuli were used as in the previous experiments. The only alteration from Experiment 1 was the substitution of the exclamation point with a period: 
+
+\ex.\label{ex:habitual3} \centering\textsc{Ordinary context}
+\vspace{-0.1cm}
+\centering
+
+\begin{longtable}{p{0.435\textwidth}|p{0.435\textwidth}}
+\multicolumn{2}{p{0.9\textwidth}}{$[$1$]$ John often goes to the grocery store around the corner from his apartment.} \\
+\hline
+\multicolumn{2}{p{0.9\textwidth}}{$[$2$]$ Recently, he came home from the store with groceries.  When he came in, he saw his roommate Susan in the hallway, and started talking to her about his trip to the store.  As he went to the kitchen to put his groceries away, Susan went to the living room, where their roommate Peter was watching TV.} \\
+\hline
+\multicolumn{2}{p{0.9\textwidth}}{$[$3$]$ Susan said to Peter: ``John just came back from the grocery store.} \\
+\hline
+$[$4a$]$ He \textit{paid the \mbox{cashier\textsubscript{habitual}}}.'' & $[$4b$]$ He \textit{got some apples\textsubscript{non-habitual}}.''
+\end{longtable}
+\addtocounter{table}{-1}
+
+\subsubsection{Procedure}
+
+The procedure was identical to that of previous experiments. 
+
+\subsubsection{Measures}
+
+The same response measures as in the previous experiments were used to estimate \textit{pre-utterance beliefs} and \textit{post-utterance beliefs}. 
+
+\subsection{Results}
+
+As in previous experiments, we modeled the difference between \textit{pre-utterance} and \textit{post-utterance} beliefs. \textit{Conventionally habitual} and conventionally \textit{non-habitual} activities were modeled separately. All factors were effect/sum coded. 
+
+\subsubsection{\textit{Conventionally habitual} activities}
+
+As in the previous experiments, \textit{pre-utterance belief} ratings showed \textit{ordinary context} activities to be highly habitual (%
+<<echo=FALSE,results="asis">>=
+cat(paste0(prior_typ_pred_3))
+@
+), and \textit{wonky context} activities to be less habitual (%
+<<echo=FALSE,results="asis">>=
+cat(paste0(prior_atyp_pred_3))
+@
+). Consistent with our predictions, \textit{post-utterance beliefs} are significantly lower in the \textit{ordinary context condition} (%
+<<echo=FALSE,results="asis">>=
+cat(paste0(updated_typ_pred_3))
+@
+), but less so than in the previous two experiments. Exp. 3 is compared directly to Exp. 1 and 2 in Section \ref{cross-experiment-analysis-and-gradience-of-the-non-habituality-effect}.
+
+A linear mixed effects regression analysis, the results of which are summarized in Table \ref{tab:exp3habitual}, showed an interaction between context and belief measure ($\beta$=%
+<<echo=FALSE,results="asis">>=
+cat(paste0(round(wc_pred_3["b"],2)))
+@
+, $p$<%
+<<echo=FALSE,results="asis">>=
+cat(paste0(printp_mine(wc_pred_3["p"])))
+@
+), which is driven by lowered activity habituality ratings when the readers see the utterance in an ordinary context ($\beta$=%
+<<echo=FALSE,results="asis">>=
+cat(paste0(pred_typ_3_b))
+@
+, $p$<%
+<<echo=FALSE,results="asis">>=
+cat(paste0(printp_mine(pred_typ_3_p)))
+@
+). All model specifications are as described in Exp. 1 and 2.  A plot illustrating the interaction can be seen in Fig. \ref{fig:exp3habitual}.
+
+<<exp3 hab tab, echo=FALSE, results="asis", cache=TRUE>>=
+coefs = as.data.frame(summary(habitual_per)$coefficients[,c(1,2,4,5)])
+
+coefs[,1] = round(coefs[,1],digits=2)
+coefs[,2] = round(coefs[,2],digits=2)
+coefs[,3] = round(coefs[,3],digits=2)
+coefs[,4] = ifelse(coefs[,4] > .05, paste(round(coefs[,4],digits=1),sep=""),
+ifelse(coefs[,4] < .001,"\\textbf{<.001}",
+ifelse(coefs[,4] < .01, "\\textbf{<.01}", "\\textbf{<.05}")))
+
+colnames(coefs) = c("$\\beta$","SE($\\beta$)", "\\textbf{t}","\\textbf{p}")
+
+prednames = data.frame(PName=row.names(coefs),NewNames=c("Intercept","Common Ground: Ordinary","Belief: Post-utterance","Common Ground * Belief"))
+
+row.names(coefs) = prednames$NewNames[prednames$PName == row.names(coefs)]
+
+latex(coefs,file="",title="",table.env=TRUE,booktabs=TRUE,caption="Experiment 3: \\textit{conventionally habitual} (\\textit{cashier-paying}) activity analysis.",label="tab:exp3habitual",where="ht")
+@
+
+<<fig.width=8, fig.height=3.5, echo=FALSE, fig.cap="\\label{fig:exp3habitual}Experiment 3: \\textit{conventionally habitual} (\\textit{cashier-paying}) activity analysis.", message=FALSE, warning=FALSE>>=
+habitual.data_plot <- period.habitual
+habitual.data_plot$world <- factor(habitual.data_plot$world, levels=c("wonky", "ordinary"))
+habitual.data_plot$condition <- factor(habitual.data_plot$condition,levels=c("after","before"))
+# summary(habitual.data_plot)
+# str(habitual.data_plot)
+
+dodge <- position_dodge(width = 0.85)
+
+habitual.summary <- habitual.data_plot %>%
+  group_by(world, condition) %>%
+  summarise(val = mean(rating))
+
+# habitual.summary
+
+ggplot(habitual.data_plot, aes(x = world, y = rating, fill = condition)) + 
+  geom_violin(position = dodge) +
+  geom_boxplot(width=.175, aes(fill=NULL,group=interaction(world,condition)), fill="white", position = dodge) +   
+  geom_point(data = habitual.summary, aes(y = val), position = dodge, shape=21) +
+  geom_line(data = habitual.summary[habitual.summary$world=="ordinary",], aes(y = val, group = world), position = position_dodge(width = 0.85), arrow = arrow(angle = 25, ends = "first", type = "closed", length = unit(0.1, "inches")))+
+  geom_line(data = habitual.summary[habitual.summary$world=="wonky",], aes(y = val, group = world), position = position_dodge(width = 0.85)) + 
+  ylab("Activity Habituality Estimate") +
+  xlab("Common Ground Context") +
+  theme(legend.position="right") +
+  scale_colour_manual(values = c("#000000", "#DF0101")) +
+  theme(axis.text.x = element_text(size=12, colour="black")) +
+  theme(axis.text.y = element_text(size=12, colour="black")) +
+  theme(axis.title.y=element_text(size=15))+
+  theme(axis.title.x=element_text(size=15))+ 
+  theme(legend.text=element_text(size=12,face = "italic"))+scale_fill_grey(start = 0.2, end = 0.8, name="Beliefs:", breaks=c("before","after"), labels=c("pre-utterance","post-utterance")) + scale_y_continuous(breaks = c(0,25,50,75,100), labels = c("0 (Never)", "25", "50", "75", "100 (Always)")) + scale_x_discrete(labels = c("wonky\n('non-payer')","ordinary")) + coord_flip()
+@
+
+These results indicate that, consistent with our predictions and the results of Exp. 1 and 2, when an easily inferable activity is overtly mentioned in a \textit{ordinary} common ground context, comprehenders do infer some degree of activity non-habituality, even without implicit prosody or discourse markers putting additional emphasis on the utterance.
+
+\subsubsection{Conventionally \textit{non-habitual} activities}
+
+In contrast to Experiment 1 and similar to Experiment 2, there was some increase in participants' ratings of conventionally \textit{non-habitual} activities from \textit{pre-utterance} to \textit{post-utterance} beliefs (\textit{ordinary}: %
+<<echo=FALSE,results="asis">>=
+cat(paste0(prior_typ_opt_3))
+@
+ to %
+<<echo=FALSE,results="asis">>=
+cat(paste0(updated_typ_opt_3))
+@
+; \textit{wonky}: %
+<<echo=FALSE,results="asis">>=
+cat(paste0(prior_atyp_opt_3))
+@
+ to %
+<<echo=FALSE,results="asis">>=
+cat(paste0(updated_atyp_opt_3))
+@
+), see Fig. \ref{fig:exp3nonhabitual}.
+
+A linear mixed effects regression analysis showed that estimates of activity habituality do not vary with changes in the common ground context (or common ground \textit{wonkiness}), but do increase slightly when the utterance describing the conventionally \textit{non-habitual} activity (see Table \ref{tab:exp3nonhabitual}) is visible ($\beta$=%
+<<echo=FALSE,results="asis">>=
+cat(paste0(round(c_opt_3["b"],2)))
+@
+, $p$<%
+<<echo=FALSE,results="asis">>=
+cat(paste0(printp_mine(c_opt_3["p"])))
+@
+).  As in the case of Exp. 2, we suspect that explicitly mentioning a relatively unusual activity leads participants to believe that activity to be slightly more habitual than they would otherwise assume.
+
+<<exp3 unhab tab, echo=FALSE, results="asis", cache=TRUE>>=
+coefs = as.data.frame(summary(nonhabitual_per)$coefficients[,c(1,2,4,5)])
+
+coefs[,1] = round(coefs[,1],digits=2)
+coefs[,2] = round(coefs[,2],digits=2)
+coefs[,3] = round(coefs[,3],digits=2)
+coefs[,4] = ifelse(coefs[,4] > .05, paste(round(coefs[,4],digits=1),sep=""),
+ifelse(coefs[,4] < .001,"\\textbf{<.001}",
+ifelse(coefs[,4] < .01, "\\textbf{<.01}", "\\textbf{<.05}")))
+
+colnames(coefs) = c("$\\beta$","SE($\\beta$)", "\\textbf{t}","\\textbf{p}")
+
+prednames = data.frame(PName=row.names(coefs),NewNames=c("Intercept","Common Ground: Ordinary","Belief: Post-utterance","Common Ground * Belief"))
+
+row.names(coefs) = prednames$NewNames[prednames$PName == row.names(coefs)]
+
+latex(coefs,file="",title="",table.env=TRUE,booktabs=TRUE,caption="Experiment 3: conventionally \\textit{non-habitual} (\\textit{apple-buying}) activity analysis.",label="tab:exp3nonhabitual",where="ht")
+@
+
+<<fig.width=8, fig.height=3.5, echo=FALSE, fig.cap="\\label{fig:exp3nonhabitual}Experiment 3: conventionally \\textit{non-habitual} (\\textit{apple-buying}) activity analysis.", message=FALSE, warning=FALSE>>=
+nonhabitual.data_plot <- period.nonhabitual
+nonhabitual.data_plot$world <- factor(nonhabitual.data_plot$world, levels=c("wonky", "ordinary"))
+nonhabitual.data_plot$condition <- factor(nonhabitual.data_plot$condition,levels=c("after","before"))
+# summary(nonhabitual.data_plot)
+# str(nonhabitual.data_plot)
+
+dodge <- position_dodge(width = 0.85)
+
+nonhabitual.summary <- nonhabitual.data_plot %>%
+  group_by(world, condition) %>%
+  summarise(val = mean(rating))
+
+# nonhabitual.summary
+
+ggplot(nonhabitual.data_plot, aes(x = world, y = rating, fill = condition)) + 
+  geom_violin(position = dodge, width=0.33) +
+  geom_boxplot(width=.175, aes(fill=NULL,group=interaction(world,condition)), fill="white", position = dodge) +   
+  geom_point(data = nonhabitual.summary, aes(y = val), position = dodge, shape=21) +
+  geom_line(data = nonhabitual.summary[nonhabitual.summary$world=="ordinary",], aes(y = val, group = world), position = position_dodge(width = 0.85), arrow = arrow(angle = 25, ends = "first", type = "closed", length = unit(0.1, "inches")))+
+  geom_line(data = nonhabitual.summary[nonhabitual.summary$world=="wonky",], aes(y = val, group = world), position = position_dodge(width = 0.85), arrow = arrow(angle = 25, ends = "first", type = "closed", length = unit(0.1, "inches"))) + 
+  ylab("Activity Habituality Estimate") +
+  xlab("Common Ground Context") +
+  theme(legend.position="right") +
+  scale_colour_manual(values = c("#000000", "#DF0101")) +
+  theme(axis.text.x = element_text(size=12, colour="black")) +
+  theme(axis.text.y = element_text(size=12, colour="black")) +
+  theme(axis.title.y=element_text(size=15))+
+  theme(axis.title.x=element_text(size=15))+ 
+  theme(legend.text=element_text(size=12,face = "italic"))+scale_fill_grey(start = 0.2, end = 0.8, name="Beliefs:", breaks=c("before","after"), labels=c("pre-utterance","post-utterance")) + scale_y_continuous(breaks = c(0,25,50,75,100), labels = c("0 (Never)", "25", "50", "75", "100 (Always)")) + scale_x_discrete(labels = c("wonky\n('non-payer')","ordinary")) + coord_flip()
+@
+
+\subsection{Discussion}
+
+In contrast to the results of the first two experiments, these results suggest that, when informationally redundant utterances are presented without a signal of speaker intent and utterance relevance, comprehenders are relatively unlikely to draw \textit{non-habituality} inferences. This is consistent with the "form sensitivity" hypothesis described in Section \ref{how-might-comprehenders-react-to-informational-redundancy}, and the premise that, while rational speakers may typically avoid making utterances that have no literal or implied informational utility, and while such utterances may prompt pragmatic inferences on the part of comprehenders (which increase the informational utility of such utterances), such inferences are dependent on the degree to which the utterances are perceived as intentional.  Further, while the results are not consistent with a strong form of the "non-detachability" hypothesis, they do broadly suggest that redundancy generates inferences regardless of form of delivery.
+
+We should note, however, that this is not what we found in the experiments we are replicating - where the inference disappeared entirely without prosodic or discourse emphasis (strongly supporting the "form sensitivity" hypothesis, and at odds with the "non-detachability" hypothesis).  Although the replicated experiments were not as highly powered, the difference might be due to stimulus redesign - in the supplementary materials\footnote{\url{https://osf.io/8fz4m/?view_only=ff5859d3f33b485d95254395f95a52dc}}, we speculate as to why this might be the case.
+
+\section{Cross-Experiment Analysis and Gradience of the Habituality Effect}\label{cross-experiment-analysis-and-gradience-of-the-non-habituality-effect}
+
+<<all exp setup, cache=TRUE, echo=FALSE, message=FALSE, warning=FALSE>>=
+habitual_all <- lmer(rating ~ experiment*cWorld*cCondition + (cWorld+cCondition|id) + (experiment+cWorld*cCondition|story), habitual.data)
+max_story <- round(min(coef(habitual_all)$story[,10]),2)
+min_story <- round(max(coef(habitual_all)$story[,10]),2)
+mean_story <- round(mean(coef(habitual_all)$story[,10]),2)
+
+coefs <- summary(habitual_all)$coefficients
+colnames(coefs) <- c("b","se","df","t","p")
+coefs[2,"p"] <- ifelse(coefs[2,"p"]<.001,.001,ifelse(coefs[2,"p"]<.01,.01,ifelse(coefs[2,"p"]<.05,.05,round(coefs[2,"p"],2))))
+coefs[3,"p"] <- ifelse(coefs[3,"p"]<.001,.001,ifelse(coefs[3,"p"]<.01,.01,ifelse(coefs[3,"p"]<.05,.05,round(coefs[3,"p"],2))))
+coefs[4,"p"] <- ifelse(coefs[4,"p"]<.001,.001,ifelse(coefs[4,"p"]<.01,.01,ifelse(coefs[4,"p"]<.05,.05,round(coefs[4,"p"],2))))
+coefs[5,"p"] <- ifelse(coefs[5,"p"]<.001,.001,ifelse(coefs[5,"p"]<.01,.01,ifelse(coefs[5,"p"]<.05,.05,round(coefs[5,"p"],2))))
+coefs[6,"p"] <- ifelse(coefs[6,"p"]<.001,.001,ifelse(coefs[6,"p"]<.01,.01,ifelse(coefs[6,"p"]<.05,.05,round(coefs[6,"p"],2))))
+coefs[7,"p"] <- ifelse(coefs[7,"p"]<.001,.001,ifelse(coefs[7,"p"]<.01,.01,ifelse(coefs[7,"p"]<.05,.05,round(coefs[7,"p"],2))))
+coefs[8,"p"] <- ifelse(coefs[8,"p"]<.001,.001,ifelse(coefs[8,"p"]<.01,.01,ifelse(coefs[8,"p"]<.05,.05,round(coefs[8,"p"],2))))
+coefs[9,"p"] <- ifelse(coefs[9,"p"]<.001,.001,ifelse(coefs[9,"p"]<.01,.01,ifelse(coefs[9,"p"]<.05,.05,round(coefs[9,"p"],2))))
+coefs[10,"p"] <- ifelse(coefs[10,"p"]<.001,.001,ifelse(coefs[10,"p"]<.01,.01,ifelse(coefs[10,"p"]<.05,.05,round(coefs[10,"p"],2))))
+coefs[11,"p"] <- ifelse(coefs[11,"p"]<.001,.001,ifelse(coefs[11,"p"]<.01,.01,ifelse(coefs[11,"p"]<.05,.05,round(coefs[11,"p"],2))))
+coefs[12,"p"] <- ifelse(coefs[12,"p"]<.001,.001,ifelse(coefs[12,"p"]<.01,.01,ifelse(coefs[12,"p"]<.05,.05,round(coefs[12,"p"],2))))
+pred_all_1 <- coefs[2,]
+pred_all_2 <- coefs[3,]
+pred_all_3 <- coefs[4,]
+pred_all_4 <- coefs[5,]
+pred_all_5 <- coefs[6,]
+pred_all_6 <- coefs[7,]
+pred_all_7 <- coefs[8,]
+pred_all_8 <- coefs[9,]
+pred_all_9 <- coefs[10,]
+pred_all_10 <- coefs[11,]
+pred_all_11 <- coefs[12,]
+
+######################################
+
+habitual.data_plot <- habitual.data
+habitual.data_plot$world <- factor(habitual.data_plot$world, levels=c("ordinary", "wonky"))
+habitual.data_plot$activity <- factor(habitual.data_plot$activity, levels=c("habitual", "non-habitual"))
+habitual.data_plot$condition <- factor(habitual.data_plot$condition,levels=c("before","after"))
+habitual.data_plot$experiment <- factor(habitual.data_plot$experiment,levels=c("exclamation","ohyeah","period"))
+# summary(habitual.data_plot)
+# str(habitual.data_plot)
+
+dodge <- position_dodge(width = 0.85)
+
+habitual.summary <- habitual.data_plot %>%
+  group_by(experiment, world, condition) %>%
+  summarise(val = mean(rating))
+
+total1 <- data %>%
+  filter(condition=="before") %>%
+  group_by(story,world,activity,experiment,Qtype) %>%
+  summarise(meanRating = mean(rating))
+total2 <- data %>%
+  filter(condition=="after") %>%
+  group_by(story,world,activity,experiment,Qtype) %>%
+  summarise(meanRating = mean(rating))
+total <- left_join(total2,total1,by=c("story","world","experiment","Qtype"))
+total <- filter(total, as.character(Qtype)==as.character(activity.x))[,c(1:4,6,8)]
+total <- rename(total,activity=activity.x, after = meanRating.x, before = meanRating.y)
+total$change <- total$after - total$before
+modelTotal <- total
+total <- unite(total,condition,c(world,activity),sep=" ")
+total$experiment <- factor(total$experiment,levels=c("exclamation","ohyeah","period"))
+total$condition <- factor(total$condition,levels=c("ordinary habitual","ordinary non-habitual","wonky habitual","wonky non-habitual"))
+
+lm1 <- lm(after ~ before, data=filter(modelTotal, experiment=="exclamation"))
+b1 <- summary(lm1)$coefficients[2,1]
+lm2 <- lm(after ~ before, data=filter(modelTotal, experiment=="ohyeah"))
+b2 <- summary(lm2)$coefficients[2,1]
+lm3 <- lm(after ~ before, data=filter(modelTotal, experiment=="period"))
+b3 <- summary(lm3)$coefficients[2,1]
+
+h <- (nrow(coefs) + 1)/3
+@
+
+In this section, we directly compare the results of the three experiments.  We predict that informationally redundant utterances can trigger \textit{non-habituality} inferences of similar magnitude independently of whether one uses an explicit marker of suprisal: in other words, that the effect is generalizable.  However, we also predict that the effect is significantly attenuated in absence of a prosodic or discourse marker which signals relevance and speaker intent.
+
+\subsection{\textit{Conventionally habitual} activities}
+
+To directly compare the three experiments, we run a $3\times 2\times 2$ linear mixed effects regression analysis of \textit{conventionally habitual} activities.  We modeled \textit{belief change} (\textit{pre-utterance} vs. \textit{post-utterance} beliefs), as a function of common ground (\textit{ordinary} vs. \textit{wonky}), as well as the between-subject discourse marker manipulation ('\textit{!}' vs. `\textit{Oh yeah, and}' vs. `\textit{.}').  The first two factors were effect/sum coded.  We used Helmert coding for the 3-level experiment factor, as this allowed us to make the comparisons of theoretical interest: Exp. 1 vs. Exp. 2 ('\textit{!}' vs. `\textit{Oh yeah, and}'), and then Exp. 3 vs. Exp. 1 and 2 grouped together ('\textit{.}' vs. the relevance markers).
+
+The regression analysis showed a significant three-way interaction between relevance marker presence, common ground context, and belief measure: there was a significantly smaller \textit{non-habituality} effect in Exp. 3 than in Experiments 1 and 2 ($\beta$=%
+<<echo=FALSE,results="asis">>=
+cat(paste0(round(pred_all_11["b"],2)))
+@
+, $p$<%
+<<echo=FALSE,results="asis">>=
+cat(paste0(printp_mine(pred_all_11["p"])))
+@
+), and no significant difference between Experiments 1 and 2 ($\beta$=%
+<<echo=FALSE,results="asis">>=
+cat(paste0(round(pred_all_10["b"],2)))
+@
+, $p$=%
+<<echo=FALSE,results="asis">>=
+cat(paste0(printp_mine(pred_all_10["p"])))
+@
+).
+
+
+We used the maximal converging model, with by-subject random intercepts and slopes for common ground context (\textit{ordinary} / \textit{wonky}) and belief measure (\textit{pre-utterance} / \textit{post-utterance}), by-item random intercepts and slopes for both factors and their interaction, and a by-item random slope for experiment. By-subject random slopes for the interaction were not included in the model due to lack of within-subject repeated measures. The random slope for the full (by-item) experiment by common ground by belief measure interaction was not included due to non-convergence. A plot illustrating the comparison can be seen in Fig. \ref{fig:expallhabitual}.
+
+<<allexp hab tab, echo=FALSE, results="asis", cache=TRUE>>=
+coefs = as.data.frame(summary(habitual_all)$coefficients[,c(1,2,4,5)])
+
+coefs[,1] = round(coefs[,1],digits=2)
+coefs[,2] = round(coefs[,2],digits=2)
+coefs[,3] = round(coefs[,3],digits=2)
+coefs[,4] = ifelse(coefs[,4] > .05, paste(round(coefs[,4],digits=1),sep=""),
+ifelse(coefs[,4] < .001,"\\textbf{<.001}",
+ifelse(coefs[,4] < .01, "\\textbf{<.01}", "\\textbf{<.05}")))
+
+colnames(coefs) = c("$\\beta$","SE($\\beta$)", "\\textbf{t}","\\textbf{p}")
+
+prednames = data.frame(PName=row.names(coefs),NewNames=c("Intercept","`!' vs. `Oh yeah...'","`.' vs. Relevance Markers","Common Ground: Ordinary","Belief: Post-utterance","`!' vs. `Oh yeah' * Common Ground","`.' vs. Relevance Markers * Common Ground","`!' vs. `Oh yeah' * Belief","`.' vs. Relevance Markers * Belief","Common Ground * Belief","`!' vs. `Oh yeah' * CG * Belief","`.' vs. Relevance Markers * CG * Belief"))
+
+row.names(coefs) = prednames$NewNames[prednames$PName == row.names(coefs)]
+
+latex(coefs,file="",title="",table.env=TRUE,booktabs=TRUE,caption="Experiments 1-3: \\textit{conventionally habitual} (\\textit{cashier-paying}) activity analysis.",label="tab:expall",where="ht")
+@
+
+<<fig.width=8, fig.height=4.5, echo=FALSE, fig.cap="\\label{fig:expallhabitual}Experiments 1-3: \\textit{conventionally habitual} (\\textit{cashier-paying}) activity analysis.", message=FALSE, warning=FALSE>>=
+all.data_plot <- habitual.data
+all.data_plot$world <- factor(all.data_plot$world, levels=c("ordinary","wonky"))
+all.data_plot$condition <- factor(all.data_plot$condition,levels=c("before","after"))
+# summary(habitual.data_plot)
+# str(habitual.data_plot)
+
+dodge <- position_dodge(width = 0.85)
+
+all.summary <- all.data_plot %>%
+  group_by(experiment, world, condition) %>%
+  summarise(val = mean(rating))
+
+all.data_plot$experiment <- fct_recode(all.data_plot$experiment, "Exclamation"="exclamation","Oh yeah, and..."="ohyeah","Period"="period")
+all.summary$experiment <- fct_recode(all.summary$experiment, "Exclamation"="exclamation","Oh yeah, and..."="ohyeah","Period"="period")
+
+# all.summary
+
+ggplot(all.data_plot, aes(x = world, y = rating, fill = condition)) + 
+  geom_violin(position = dodge) +
+  facet_grid(. ~ experiment) + 
+  geom_boxplot(width=.2, aes(fill=NULL,group=interaction(world,condition)), fill="white", position = dodge) +   
+  geom_point(data = all.summary, aes(y = val), position = dodge, shape=21) +
+  geom_line(data = all.summary[all.summary$world=="ordinary",], aes(y = val, group = world), position = position_dodge(width = 0.85), arrow = arrow(angle = 25, ends = "last", type = "closed", length = unit(0.1, "inches")))+
+  geom_line(data = all.summary[all.summary$world=="wonky",], aes(y = val, group = world), position = position_dodge(width = 0.85)) + 
+  ylab("Activity Habituality Estimate") +
+  xlab("Common Ground Context") +
+  theme(legend.position="top") +
+  scale_colour_manual(values = c("#000000", "#DF0101")) +
+  theme(axis.text.x = element_text(size=12, colour="black")) +
+  theme(axis.text.y = element_text(size=12, colour="black")) +
+  theme(axis.title.y=element_text(size=15))+
+  theme(axis.title.x=element_text(size=15))+ 
+  theme(legend.text=element_text(size=12,face = "italic"))+scale_fill_grey(start = 0.8, end = 0.2, name="Beliefs:", breaks=c("before","after"), labels=c("pre-utterance","post-utterance")) + scale_y_continuous(breaks = c(0,25,50,75,100), labels = c("0 (Never)", "25", "50", "75", "100 (Always)")) + scale_x_discrete(labels = c("ordinary","wonky\n('non-payer')"))
+@
+
+The results are summarized in \ref{tab:expall}.  As predicted, the effect holds regardless of which relevance marker is used, and in fact there is no statistically significant difference between the two markers.  Further, the effect size of the common ground by belief measure interaction is significantly smaller in the absence of the markers; in other words, participants are significantly less likely to make a \textit{non-habituality} inference in the absence of a prosodic or discourse marker signaling relevance or intentionality\footnote{A similar cross-experiment analysis of the conventionally \textit{non-habitual} activities can be found in the supplementary materials: \url{https://osf.io/8fz4m/?view_only=ff5859d3f33b485d95254395f95a52dc}}.
+
+The effect direction is consistent across experimental items, with by-item common ground by belief measure interaction effect sizes ranging from %
+<<echo=FALSE,results="asis">>=
+cat(paste0(min_story))
+@
+ to %
+<<echo=FALSE,results="asis">>=
+cat(paste0(max_story))
+@
+.  We again note here that this set of 3 experiments is a replication of a previously run set with somewhat less naturalistic stimuli, a full description of which can be found in the supplementary materials linked to in the previous paragraph. In addition, the `exclamation' experiment in that set is a further replication of a within-subects version (same stimuli), previously published as \citet{Kravtchenko2015}, where participants updated their own ratings after seeing the utterance.  We therefore argue that this is overall a robust and replicable effect.
+
+This result clearly favors the "form sensitivity" hypothesis described in Section \ref{how-might-comprehenders-react-to-informational-redundancy} over a strong version of the "non-detachability" hypothesis (which might predict an effect of the same magnitude for all experiments).  We conclude that in the absence of a clear signal of utterance relevance or speaker intentionality, comprehenders are either less likely to attempt to resolve the violation, resolve it in a manner that is not reflected in our response measures, or do not detect the violation the first place. The first possibility is supported by observations that comprehenders approach speaker utterances \textit{charitably}, and may expend significant effort on interpreting them in a manner that is consistent with the speaker making cooperative conversational choices \citep{Davidson1974}. However, it is also possible that comprehenders are less `charitable' in general when presented with oddly phrased psycholinguistic stimuli in an artificial setting -- as well as less motivated on expending cognitive effort on calculating a non-obvious inference in a non-interactive environment, on the basis of an utterance that their attention is not otherwise drawn to.
+
+Less charitable comprehenders, who may detect the redundancy but fail to in some way resolve it, may assume that the speaker is odd or not a particularly cooperative speaker, or perhaps that they are having production difficulties.  Another possibility is that they assume the speaker is in the process of planning a more informative utterance (where, for example, the description might serve as a temporal/causal anchor; see Example \ref{anchor}). Determining which strategies comprehenders do in fact resort to, and in which contexts, is left to future work. Finally, there is the possibility that, given the non-interactive experimental setting, comprehenders are processing the utterances at a relatively shallow level, and absent some (prosodic, discourse) indication that an utterance is somehow important, they do not expend effort on it \citep{Sanford2006}. To note, it has frequently been observed that comprehenders often do not make expected inferences in behavioral studies, for reasons that are not yet fully known \citep[cf.,][]{Noveck2003}. Determining whether this plays a role in our studies is left to future work, as is the question of whether similar or stronger effects can be observed in less artificial, and/or more interactive settings.
+
+\subsection{Is the effect of habituality on pragmatic inferences gradient?}
+
+Fig. \ref{fig:grad} plots the measured average activity habituality, with and without seeing the target utterance, for each item in each condition, for all three experiments. The diagonal dashed line demonstrates what the "no inference" hypothesis would predict: i.e., no effect of the utterance on belief change (\textit{pre-utterance} ratings mapping straightforwardly onto \textit{post-utterance} ratings). Points found above the line indicate that for those items, participants were more certain, for example, that \textit{John usually buys apples} when the story mentioned that "he got some apples." Points below the line indicate a \textit{non-habituality inference}: e.g., mentioning that "he paid the cashier" causes people to believe that \textit{John does not usually pay the cashier}.
+
+<<fig.width=7, fig.height=7.25, echo=FALSE, fig.cap="\\label{fig:grad}These plots show by-item belief change for all conditions of our three experiments. The dotted diagonal line represents the ``no inference'' hypothesis; i.e., what we would expect the data to look like if the critical utterance had no effect on habituality beliefs. The solid black line is a regression line with 95\\% CIs across all conditions. The shading of the points represents the degree and direction of \\textit{belief change}: negative/black indicates a \\textit{non-habituality} inference; positive/light gray indicates a perception of increased habituality.", message=FALSE, warning=FALSE>>=
+cutoff <- data.frame( x = c(0, 100), y = c(0, 100), cutoff = factor("No effect on\nactivity perception") )
+
+total$condition <- fct_recode(total$condition, "ordinary habitual\n(cashier-paying)"="ordinary habitual","ordinary non-habitual\n(apple-buying)"="ordinary non-habitual","wonky habitual\n(cashier-paying)"="wonky habitual","wonky non-habitual\n(apple-buying)"="wonky non-habitual")
+
+total$experiment <- fct_recode(total$experiment, "Exclamation:"="exclamation","Oh yeah, and...:"="ohyeah","Period:"="period")
+
+ggplot(total, aes(x=before, y=after)) +
+  geom_point(aes(color=change, shape = condition), size=3) + 
+  scale_shape_manual(values=c(15,16,3,8)) +    
+  geom_smooth(method=lm, color="black") + 
+  labs(x = "Pre-utterance habituality rating", y = "Post-utterance habituality rating", shape='Condition:', color="Habituality after\nutterance seen:") + 
+  theme(legend.position="right") +
+  geom_line(aes( x, y, linetype = cutoff ), cutoff) +
+  ggtitle("Exp. 1-3: All Activities") + 
+  theme(plot.title = element_text(hjust = 0.5)) + 
+  coord_cartesian(xlim=c(0,100), ylim = c(0,100), expand=FALSE) +
+  scale_linetype_manual(name="Along Line:", values=c("dotdash", "dotted")) +
+  guides(col=guide_legend(nrow=5, keyheight=1), shape=guide_legend(nrow=4, keyheight=1.75)) +
+  facet_wrap(~ experiment, ncol = 1) + 
+  scale_color_gradient(low="#000000", high="#CCCCCC", breaks = c(-25,0,25), labels = c("-25: decrease", "   0: no change", " 25: increase")) +
+  theme_classic()
+@
+
+In Experiment 1 (exclamation mark), we see that for \textit{ordinary} common grounds, and \textit{conventionally-habitual} activities (e.g., \textit{paying the cashier} given an ordinary common ground), most data points fall below the line, indicating a non-habituality inference. Interestingly, we also see a gradual `trend' towards \textit{non-habituality} in the other three (non-redundant) conditions: items that are similar to \textit{ordinary habitual} items, in terms of pre-utterance habituality estimates, are more likely to trigger non-habituality inferences. In contrast, items with low pre-utterance habituality estimates show the opposite effect: i.e., if it's mentioned that an individual engaged in a particularly non-habitual activity, it leads comprehenders to believe that the individual is more likely to engage in that activity habitually. The same observations also hold for Experiment 2. 
+
+In Experiment 3 (period), we again see a gradual effect of \textit{pre-utterance} beliefs regarding activity habituality on the likelihood of a \textit{non-habituality inference}, but this time the slope of the regression line is shifted upwards (Exp. 1: $\beta$=%
+<<echo=FALSE,results="asis">>=
+cat(paste0(round(b1,2)))
+@
+; Exp. 2: $\beta$=%
+<<echo=FALSE,results="asis">>=
+cat(paste0(round(b2,2)))
+@
+; Exp. 3: $\beta$=%
+<<echo=FALSE,results="asis">>=
+cat(paste0(round(b3,2)))
+@
+). We still see, however, that there is a gradient difference between highly expected vs. relatively expected events, in terms of likelihood of a non-habituality inference occurring.
+
+Taken together, we can see in these figures that the exclamation mark and the `\textit{oh yeah...}' discourse marker, as signals of speaker effort and intentionality, make it more likely that non-habituality inferences will arise for \textit{ordinary} common ground, \textit{habitual} activity activity mentions. Furthermore, we can see that the effect of pre-utterance beliefs on non-habituality inferences is clearly gradient rather than binary: relatively more habitual activities, in all conditions, generally elicit larger \textit{non-habituality} inferences.
+
+\section{General Discussion}\label{disc}
+
+\subfile{sections/disc.tex}
+
+\bibliography{prag}
+
+\appendix
+
+\pagebreak
+
+\section{Replicated Work}\label{appendix}
+
+<<setup, echo=FALSE, results="hide", message=FALSE, warning=FALSE, cache=TRUE>>=
+set.seed(42)
+
+old_data <- read_csv("~/Shared/informationally-redundant-utterances/data/MTurk/old.csv", col_types = cols(workerid = col_factor(levels = NULL))) %>% select(workerid:language,trial:eligible) %>% mutate_if(is.character,funs(factor(.)))
+
+old_data <- rename(old_data, id=workerid, world=context, activity=utterance, Qtype=type)
+
+old_data$world <- fct_recode(old_data$world, wonky="biased",ordinary="typical")
+old_data$activity <- fct_recode(old_data$activity, habitual="redundant", "non-habitual"="informative", habitual="predictable", "non-habitual"="unpredictable")
+old_data$experiment <- fct_recode(old_data$experiment, ohyeah="oh_yeah")
+old_data$Qtype <- fct_recode(old_data$Qtype, habitual="redundant", "non-habitual"="informative", script="distractor1", interaction="distractor2", habitual="predictable", "non-habitual"="unpredictable")
+
+old_data %>% filter(trial==1,eligible=="True",Qtype=="habitual") %>% group_by(experiment) %>% summarise(num=n())
+
+nTotal <- n_distinct(filter(old_data,trial==1,Qtype=="habitual")$id)
+nExcluded <- n_distinct(filter(old_data,trial==1,eligible=="False",Qtype=="habitual")$id)
+pExcluded <- round(n_distinct(filter(old_data,trial==1,eligible=="False",Qtype=="habitual")$id)/n_distinct(filter(old_data,trial==1,Qtype=="habitual")$id)*100,2)
+
+old_data <- filter(old_data,eligible=="True")
+
+old_habitual.data <- filter(old_data,(activity=="habitual"|is.na(activity)),Qtype=="habitual")
+old_unhabitual.data <- filter(old_data,(activity=="non-habitual"|is.na(activity)),Qtype=="non-habitual")
+
+old_habitual.data$cWorld <- ifelse(old_habitual.data$world=="ordinary",0.5,-0.5)
+old_habitual.data$cCondition <- ifelse(old_habitual.data$condition=="after",0.5,-0.5)
+old_unhabitual.data$cWorld <- ifelse(old_unhabitual.data$world=="ordinary",0.5,-0.5)
+old_unhabitual.data$cCondition <- ifelse(old_unhabitual.data$condition=="after",0.5,-0.5)
+
+old_habitual.data$experiment <- factor(old_habitual.data$experiment,levels=c("exclamation","ohyeah","period"))
+contrast <- matrix(c(-0.5,0.5,0,-1/3,-1/3,2/3),nrow=3)
+contrasts(old_habitual.data$experiment) = contrast
+
+old_unhabitual.data$experiment <- factor(old_unhabitual.data$experiment,levels=c("exclamation","ohyeah","period"))
+contrast <- matrix(c(-0.5,0.5,0,-1/3,-1/3,2/3),nrow=3)
+contrasts(old_unhabitual.data$experiment) = contrast
+
+old_habitual <- lmer(rating ~ experiment * cWorld * cCondition + (cWorld + cCondition|id) + (cWorld + cCondition|story), old_habitual.data)
+
+old_unhabitual <- lmer(rating ~ experiment * cWorld * cCondition +  (cWorld + cCondition|id) + (experiment + cWorld + cCondition|story), old_unhabitual.data)
+
+# Fixed effects:
+#                                Estimate Std. Error        df t value Pr(>|t|)    
+# (Intercept)                     61.2257     2.1066   23.5000  29.064  < 2e-16 ***
+# experiment1                      1.2692     1.2450   41.1000   1.019   0.3140    
+# experiment2                      4.3184     0.9913   54.0000   4.356 5.97e-05 ***
+# cWorld                          38.0373     3.7159   23.1000  10.237 4.60e-10 ***
+# cCondition                      -0.4294     1.4274   23.5000  -0.301   0.7662    
+# experiment1:cWorld              -0.8595     1.8161 1318.9000  -0.473   0.6361    
+# experiment2:cWorld               2.5356     1.5692 1308.7000   1.616   0.1064    
+# experiment1:cCondition           0.7187     1.7567 1307.1000   0.409   0.6825    
+# experiment2:cCondition           6.7991     1.5193 1302.9000   4.475 8.30e-06 ***
+# cWorld:cCondition              -12.6394     1.2687 2376.6000  -9.963  < 2e-16 ***
+# experiment1:cWorld:cCondition    0.0790     3.1098 2377.0000   0.025   0.9797    
+# experiment2:cWorld:cCondition    6.0059     2.6899 2366.5000   2.233   0.0257 *
+
+coefs <- summary(old_habitual)$coefficients
+colnames(coefs) <- c("b","se","df","t","p")
+coefs[2,"p"] <- ifelse(coefs[2,"p"]<.001,.001,ifelse(coefs[2,"p"]<.01,.01,ifelse(coefs[2,"p"]<.05,.05,round(coefs[2,"p"],2))))
+coefs[3,"p"] <- ifelse(coefs[3,"p"]<.001,.001,ifelse(coefs[3,"p"]<.01,.01,ifelse(coefs[3,"p"]<.05,.05,round(coefs[3,"p"],2))))
+coefs[4,"p"] <- ifelse(coefs[4,"p"]<.001,.001,ifelse(coefs[4,"p"]<.01,.01,ifelse(coefs[4,"p"]<.05,.05,round(coefs[4,"p"],2))))
+coefs[5,"p"] <- ifelse(coefs[5,"p"]<.001,.001,ifelse(coefs[5,"p"]<.01,.01,ifelse(coefs[5,"p"]<.05,.05,round(coefs[5,"p"],2))))
+coefs[6,"p"] <- ifelse(coefs[6,"p"]<.001,.001,ifelse(coefs[6,"p"]<.01,.01,ifelse(coefs[6,"p"]<.05,.05,round(coefs[6,"p"],2))))
+coefs[7,"p"] <- ifelse(coefs[7,"p"]<.001,.001,ifelse(coefs[7,"p"]<.01,.01,ifelse(coefs[7,"p"]<.05,.05,round(coefs[7,"p"],2))))
+coefs[8,"p"] <- ifelse(coefs[8,"p"]<.001,.001,ifelse(coefs[8,"p"]<.01,.01,ifelse(coefs[8,"p"]<.05,.05,round(coefs[8,"p"],2))))
+coefs[9,"p"] <- ifelse(coefs[9,"p"]<.001,.001,ifelse(coefs[9,"p"]<.01,.01,ifelse(coefs[9,"p"]<.05,.05,round(coefs[9,"p"],2))))
+coefs[10,"p"] <- ifelse(coefs[10,"p"]<.001,.001,ifelse(coefs[10,"p"]<.01,.01,ifelse(coefs[10,"p"]<.05,.05,round(coefs[10,"p"],2))))
+coefs[11,"p"] <- ifelse(coefs[11,"p"]<.001,.001,ifelse(coefs[11,"p"]<.01,.01,ifelse(coefs[11,"p"]<.05,.05,round(coefs[11,"p"],2))))
+coefs[12,"p"] <- ifelse(coefs[12,"p"]<.001,.001,ifelse(coefs[12,"p"]<.01,.01,ifelse(coefs[12,"p"]<.05,.05,round(coefs[12,"p"],2))))
+pred_all_1 <- coefs[2,]
+pred_all_2 <- coefs[3,]
+pred_all_3 <- coefs[4,]
+pred_all_4 <- coefs[5,]
+pred_all_5 <- coefs[6,]
+pred_all_6 <- coefs[7,]
+pred_all_7 <- coefs[8,]
+pred_all_8 <- coefs[9,]
+pred_all_9 <- coefs[10,]
+pred_all_10 <- coefs[11,]
+pred_all_11 <- coefs[12,]
+
+#############################\subsubsection{New data
+
+data <- read_csv("~/Shared/informationally-redundant-utterances/data/MTurk/new_processed_ratings.csv") %>% mutate_if(is.character,funs(factor(.)))
+
+data = filter(data,world%in%c("typical","wonky"),eligible=="True")
+data <- droplevels(data)
+
+data$world <- fct_recode(data$world, ordinary="typical")
+data$activity <- fct_recode(data$activity, "non-habitual"="unpredictable")
+data$Qtype <- fct_recode(data$Qtype, "non-habitual"="unpredictable")
+
+habitual.data <- filter(data,(activity=="habitual"|is.na(activity)),Qtype=="habitual")
+unhabitual.data <- filter(data,(activity=="non-habitual"|is.na(activity)),Qtype=="non-habitual")
+
+habitual.data$cWorld <- ifelse(habitual.data$world=="ordinary",0.5,-0.5)
+habitual.data$cCondition <- ifelse(habitual.data$condition=="after",0.5,-0.5)
+unhabitual.data$cWorld <- ifelse(unhabitual.data$world=="ordinary",0.5,-0.5)
+unhabitual.data$cCondition <- ifelse(unhabitual.data$condition=="after",0.5,-0.5)
+
+habitual.data$experiment <- factor(habitual.data$experiment,levels=c("exclamation","ohyeah","period"))
+contrast <- matrix(c(-0.5,0.5,0,-1/3,-1/3,2/3),nrow=3)
+contrasts(habitual.data$experiment) = contrast
+unhabitual.data$experiment <- factor(unhabitual.data$experiment,levels=c("exclamation","ohyeah","period"))
+contrasts(unhabitual.data$experiment) = contrast
+
+unhabitual_all <- lmer(rating ~ experiment*cWorld*cCondition + (cWorld+cCondition|id) + (cWorld*cCondition|story), unhabitual.data)
+@
+
+\setcounter{secnumdepth}{5}
+
+\subsection{Replicated experiments}
+
+Here we present a previous iteration of this series of experiments, using the same design as that reported in the main body of the paper, but run on separate populations (as opposed to concurrently), and with a slightly different set of stimuli. We include these results here as evidence that the effects we report are robust, replicating closely despite being run on a different population, substantial revision of the stimuli to improve naturalness, addition of filler stimuli, and a larger amount of data being collected to improve power for all relevant comparisons.
+
+\subsubsection{Methods}
+
+\paragraph*{Participants}
+
+1200 eligible participants (%
+<<total, echo=FALSE,results="asis">>=
+cat(paste0(nTotal))
+@
+ total), 400 per experiment, were recruited on Amazon Mechanical Turk, with the task only open to workers located in the US, and with an approval rating of $\geq$ 95\%. Participants who did not report their native language, or reported their native language as other than English, were excluded (%
+<<n excluded, echo=FALSE,results="asis">>=
+cat(paste0(paste0(nExcluded,"%")))
+@
+; %
+<<p excluded, echo=FALSE,results="asis">>=
+cat(paste0(paste0(pExcluded,"%")))
+@
+\%), with additional participants recruited to replace them.
+
+\paragraph*{Materials}
+
+The design was identical to that reported in the paper, aside from the inclusion of fillers, as each participant saw only 6 stimuli and no condition more than once, with all stimuli differing across multiple non-critical dimensions.  We therefore reasoned that there was little likelihood of learning the purpose of the experiment in the course of the task, and there was risk of increased task length/tedium decreasing the likelihood of participants reading passages closely enough to pick up on relatively subtle effects.
+
+The stimuli in the replicated experiments were constructed to minimize variation in syntactic and information structure, as well as length, between stimuli.  However, this came at the cost of naturalness.  Here we present a stimulus example:
+
+
+\ex.{\label{ex:oldstimulus}} \centering\textsc{Original Stimulus}
+
+\begin{longtable}{p{0.435\textwidth}|p{0.435\textwidth}}
+$[$1a$]$ John often \textit{goes to his local supermarket, as it's close by\textsubscript{ordinary}.} & $[$1b$]$ John often \textit{doesn't pay at the supermarket, as he's typically broke\textsubscript{wonky}.}\\
+\hline
+\multicolumn{2}{p{0.9\textwidth}}{$[$2$]$ Today he entered the apartment with his shopping bags flowing over. He ran into Susan, his best friend, and talked to her about his trip. Susan then wandered over to Peter, their roommate, who was in a different room.} \\
+\hline
+\multicolumn{2}{p{0.9\textwidth}}{$[$3$]$ Recently, he came home from the store with groceries.  When he came in, he saw his roommate Susan in the hallway, and started talking to her about his trip to the store.  As he went to the kitchen to put his groceries away, Susan went to the living room, where their roommate Peter was watching TV.} \\
+\hline
+\multicolumn{2}{p{0.9\textwidth}}{\centering$[$4$]$ She commented: ``John went shopping.} \\
+\hline
+$[$5a$]$ He \textbf{paid the \mbox{cashier\textsubscript{habitual}}}! & $[$5b$]$ He \textbf{got some apples\textsubscript{non-habitual}}!\\
+\hline
+\multicolumn{2}{p{0.9\textwidth}}{\centering$[$6$]$ I just saw him in the living room.''}
+\end{longtable}
+\addtocounter{table}{-1}
+
+
+\paragraph*{Procedure}
+
+The procedure was identical to that of the other experiments. 
+
+\paragraph*{Measures}
+
+The same response measures as in the other experiments were used to estimate \textit{pre-utterance beliefs} and \textit{post-utterance beliefs}. 
+
+\subsubsection{Results}
+
+As in the experiments reported in the main body of the paper, we modeled the difference between \textit{pre-utterance} and \textit{post-utterance} beliefs. \textit{Conventionally habitual} and conventionally \textit{non-habitual} activities were modeled separately. All binary factors were effect/sum coded, and the experiment factor was Helmert coded.
+
+\paragraph*{\textit{Conventionally habitual} activities}$\quad$(`Paid the cashier')\\
+
+The regression analysis showed a significant three-way interaction between discourse marker presence, common ground context, and belief measure: there was a significantly smaller \textit{atypicality} effect in Exp. 3 than in Experiments 1 and 2 ($\beta=$%
+<<beta 11, echo=FALSE,results="asis">>=
+cat(paste0(round(pred_all_11["b"],2),"%"))
+@
+, $p<$%
+<<p 11, echo=FALSE,results="asis">>=
+cat(paste0(pred_all_11["p"],"%"))
+@
+), and no significant difference between Experiments 1 and 2 ($\beta=$%
+<<beta 10, echo=FALSE,results="asis">>=
+cat(paste0(round(pred_all_10["b"],2),"%"))
+@
+, $p=$%
+<<p 10, echo=FALSE,results="asis">>=
+cat(paste0(pred_all_10["p"],"%"))
+@
+).
+
+We used the maximal converging model, with by-subject random intercepts and slopes for common ground context (\textit{ordinary} / \textit{wonky}) and belief measure (\textit{pre-utterance} / \textit{post-utterance}), as well as by-item random intercepts and slopes for all factors. By-subject random slopes for the interaction were not included in the model, because we did not have any repeated measures for subjects for the interaction.  By-item random slopes for the interactions were not included in the model due to nonconvergence. A plot illustrating the higher-order experiment by common ground by belief measure interaction can be seen in Figure \ref{fig:oldexpallhabitual}.
+
+<<table 1, echo=FALSE,results="asis",cache=TRUE>>=
+coefs = as.data.frame(summary(old_habitual)$coefficients[,c(1,2,4,5)])
+ 
+coefs[,1] = round(coefs[,1],digits=2)
+coefs[,2] = round(coefs[,2],digits=2)
+coefs[,3] = round(coefs[,3],digits=2)
+coefs[,4] = ifelse(coefs[,4] > .05, paste(round(coefs[,4],digits=1),sep=""), 
+ifelse(coefs[,4] < .001,"\\textbf{<.001}",
+ifelse(coefs[,4] < .01, "\\textbf{<.01}", "\\textbf{<.05}")))
+ 
+colnames(coefs) = c("$\\beta$","SE($\\beta$)", "\\textbf{t}","\\textbf{p}")
+ 
+prednames = data.frame(PName=row.names(coefs),NewNames=c("Intercept","`!' vs. `Oh yeah...'","`.' vs. Relevance Markers","Common Ground: Ordinary","Belief: Post-utterance","`!' vs. `Oh yeah' * Common Ground","`.' vs. Relevance Markers * Common Ground","`!' vs. `Oh yeah' * Belief","`.' vs. Relevance Markers * Belief","Common Ground * Belief","`!' vs. `Oh yeah' * CG * Belief","`.' vs. Relevance Markers * CG * Belief"))
+ 
+row.names(coefs) = prednames$NewNames[prednames$PName == row.names(coefs)]
+ 
+latex(coefs,file="",title="",table.env=TRUE,booktabs=TRUE,caption="Replicated Experiment 1-3: \\textit{conventionally habitual} (\\textit{cashier-paying}) activities analysis.",label="tab:oldexpall")
+@
+
+\begin{figure}\begin{center}
+<<figure 1, fig.width=8, fig.height=4.5, echo=FALSE,cache=TRUE>>=
+all.data_plot <- old_habitual.data
+all.data_plot$world <- factor(all.data_plot$world, levels=c("ordinary","wonky"))
+all.data_plot$condition <- factor(all.data_plot$condition,levels=c("before","after"))
+# summary(habitual.data_plot)
+# str(habitual.data_plot)
+
+dodge <- position_dodge(width = 0.85)
+
+all.summary <- all.data_plot %>%
+  group_by(experiment, world, condition) %>%
+  summarise(val = mean(rating))
+
+# all.summary
+
+all.data_plot$experiment <- fct_recode(all.data_plot$experiment, "Exclamation"="exclamation","Oh yeah, and..."="ohyeah","Period"="period")
+all.summary$experiment <- fct_recode(all.summary$experiment, "Exclamation"="exclamation","Oh yeah, and..."="ohyeah","Period"="period")
+
+ggplot(all.data_plot, aes(x = world, y = rating, fill = condition)) + 
+  geom_violin(position = dodge) +
+  facet_grid(. ~ experiment) + 
+  geom_boxplot(width=.2, aes(fill=NULL,group=interaction(world,condition)), fill="white", position = dodge) +   
+  geom_point(data = all.summary, aes(y = val), position = dodge, shape=21) +
+  geom_line(data = all.summary[all.summary$world=="ordinary" & all.summary$experiment!="Period",], aes(y = val, group = world), position = position_dodge(width = 0.85), arrow = arrow(angle = 25, ends = "last", type = "closed", length = unit(0.1, "inches"))) +
+  geom_line(data = all.summary[all.summary$world=="ordinary" & all.summary$experiment=="Period",], aes(y = val, group = world), position = position_dodge(width = 0.85))+
+  geom_line(data = all.summary[all.summary$world=="wonky",], aes(y = val, group = world), position = position_dodge(width = 0.85), arrow = arrow(angle = 25, ends = "last", type = "closed", length = unit(0.1, "inches"))) + 
+  ylab("Activity Frequency Estimate") +
+  xlab("Common Ground Context") +
+  theme(legend.position="top") +
+  scale_colour_manual(values = c("#000000", "#DF0101")) +
+  theme(axis.text.x = element_text(size=12, colour="black")) +
+  theme(axis.text.y = element_text(size=12, colour="black")) +
+  theme(axis.title.y=element_text(size=15))+
+  theme(axis.title.x=element_text(size=15))+ 
+  theme(legend.text=element_text(size=12,face = "italic"))+scale_fill_grey(start = 0.8, end = 0.2, name="Beliefs:", breaks=c("before","after"), labels=c("pre-utterance","post-utterance")) + scale_y_continuous(breaks = c(0,25,50,75,100), labels = c("0 (Never)", "25", "50", "75", "100 (Always)")) + scale_x_discrete(labels = c("ordinary","wonky\n('non-payer')"))
+@
+\end{center}
+\caption{Replicated Experiments 1-3: \textit{conventionally habitual} (\textit{cashier-paying}) activities analysis.}
+\label{fig:oldexpallhabitual}
+\end{figure}
+
+A similar analysis of the conventionally \textit{non-habitual} activities can be found in the next section of these materials.
+
+\subsubsection{Discussion}
+
+Overall, the results of these experiments were broadly replicated by those reported in the main body of the paper.  The only salient difference is that in the original iteration of Exp. 3, there was no measurable effect of informational redundancy on perceptions of activity typicality, while in the `new' Exp. 3, there was a significant, but diminished effect, as we had originally predicted.  The absence of a significant effect in the first iteration surprised us, and we attribute it to either chance (possibly due to fewer subjects run) or to increased prominence of the utterance in the revised stimuli.  To compare:
+
+\ex. \textsc{Revised:} ``John just came back from the grocery store. \textbf{He paid the cashier}.''
+
+\ex. \textsc{Original:} ``John went shopping. \textbf{He paid the cashier}. I just saw him in the living room.''
+
+The utterance in question appears more discourse-prominent in the revised version of the stimuli, as it is utterance-final (i.e., we removed the last sentence), and in general competes with fewer adjacent utterances for attention.  We leave it to future work to definitively answer whether the minor change in utterance prominence does indeed eliminate the effect entirely.
+
+\pagebreak
+
+\subsection{Conventionally \textit{non-habitual} activities$\quad$(`Bought some apples')}
+
+Here, we present the results of our cross-experiment analyses of \textit{non-habitual} activities.
+
+\subsubsection{Experiments reported in paper}
+
+We used the maximal converging model, with by-subject random intercepts and slopes for common ground context (\textit{ordinary} / \textit{wonky}) and belief measure (\textit{pre-utterance} / \textit{post-utterance}), by-item random intercepts and slopes for both factors and their interaction, and a by-item random slope for experiment. By-subject random slopes for the interaction were not included in the model due to lack of within-subject repeated measures in our data for the interaction. The random slope for the full by-item experiment by common ground by belief measure interaction was not included due to non-convergence.
+
+The results are shown in Table \ref{tab:expallopt} and Figure \ref{fig:expallopt}.
+
+<<table 2, echo=FALSE,results="asis">>=
+coefs = as.data.frame(summary(unhabitual_all)$coefficients[,c(1,2,4,5)])
+ 
+coefs[,1] = round(coefs[,1],digits=2)
+coefs[,2] = round(coefs[,2],digits=2)
+coefs[,3] = round(coefs[,3],digits=2)
+coefs[,4] = ifelse(coefs[,4] > .05, paste(round(coefs[,4],digits=1),sep=""), 
+ifelse(coefs[,4] < .001,"\\textbf{<.001}",
+ifelse(coefs[,4] < .01, "\\textbf{<.01}", "\\textbf{<.05}")))
+ 
+colnames(coefs) = c("$\\beta$","SE($\\beta$)", "\\textbf{t}","\\textbf{p}")
+ 
+prednames = data.frame(PName=row.names(coefs),NewNames=c("Intercept","`!' vs. `Oh yeah...'","`.' vs. Relevance Markers","Common Ground: Ordinary","Belief: Post-utterance","`!' vs. `Oh yeah' * Common Ground","`.' vs. Relevance Markers * Common Ground","`!' vs. `Oh yeah' * Belief","`.' vs. Relevance Markers * Belief","Common Ground * Belief","`!' vs. `Oh yeah' * CG * Belief","`.' vs. Relevance Markers * CG * Belief"))
+ 
+row.names(coefs) = prednames$NewNames[prednames$PName == row.names(coefs)]
+ 
+latex(coefs,file="",title="",table.env=TRUE,booktabs=TRUE,caption="Experiment 1-3: \\textit{conventionally non-habitual} (\\textit{apple-buying}) activities analysis.",label="tab:expallopt")
+@
+
+\begin{figure}\begin{center}
+<<suppfig1, fig.width=8, fig.height=4.5, echo=FALSE, cache=TRUE>>=
+all.data_plot <- unhabitual.data
+all.data_plot$world <- factor(all.data_plot$world, levels=c("ordinary","wonky"))
+all.data_plot$condition <- factor(all.data_plot$condition,levels=c("before","after"))
+# summary(habitual.data_plot)
+# str(habitual.data_plot)
+
+dodge <- position_dodge(width = 0.85)
+
+all.summary <- all.data_plot %>%
+  group_by(experiment, world, condition) %>%
+  summarise(val = mean(rating))
+
+# all.summary
+
+all.data_plot$experiment <- fct_recode(all.data_plot$experiment, "Exclamation"="exclamation","Oh yeah, and..."="ohyeah","Period"="period")
+all.summary$experiment <- fct_recode(all.summary$experiment, "Exclamation"="exclamation","Oh yeah, and..."="ohyeah","Period"="period")
+
+ggplot(all.data_plot, aes(x = world, y = rating, fill = condition)) +
+  geom_violin(position = dodge, width=0.33) +
+  facet_grid(. ~ experiment) + 
+  geom_boxplot(width=.2, aes(fill=NULL,group=interaction(world,condition)), fill="white", position = dodge) +   
+  geom_point(data = all.summary, aes(y = val), position = dodge, shape=21) +
+  geom_line(data = all.summary[all.summary$experiment %in% c("Oh yeah, and...","Period"),], aes(y = val, group = world), position = position_dodge(width = 0.85), arrow = arrow(angle = 25, ends = "last", type = "closed", length = unit(0.1, "inches")))+
+  geom_line(data = all.summary[all.summary$experiment=="Exclamation",], aes(y = val, group = world), position = position_dodge(width = 0.85))+
+  ylab("Activity Frequency Estimate") +
+  xlab("Common Ground Context") +
+  theme(legend.position="top") +
+  scale_colour_manual(values = c("#000000", "#DF0101")) +
+  theme(axis.text.x = element_text(size=12, colour="black")) +
+  theme(axis.text.y = element_text(size=12, colour="black")) +
+  theme(axis.title.y=element_text(size=15))+
+  theme(axis.title.x=element_text(size=15))+ 
+  theme(legend.text=element_text(size=12,face = "italic"))+scale_fill_grey(start = 0.8, end = 0.2, name="Beliefs:", breaks=c("before","after"), labels=c("pre-utterance","post-utterance")) + scale_y_continuous(breaks = c(0,25,50,75,100), labels = c("0 (Never)", "25", "50", "75", "100 (Always)")) + scale_x_discrete(labels = c("ordinary","wonky\n('non-payer')"))
+@
+\end{center}
+\caption{Experiment 1-3: \textit{conventionally non-habitual} (\textit{apple-buying}) activities analysis.}
+\label{fig:expallopt}
+\end{figure}
+
+\subsubsection{Replicated experiments}
+
+We used the maximal converging model, with by-subject random intercepts and slopes for common ground context (\textit{ordinary} / \textit{wonky}) and belief measure (\textit{pre-utterance} / \textit{post-utterance}), and by-item random intercepts and slopes for both factors and their interaction. By-subject random slopes for the interaction were not included in the model due to lack of within-subject repeated measures in our data for the interaction. The by-item random slope experiment was not included due to non-convergence.
+
+The results are shown in Table \ref{tab:oldexpallopt} and Figure \ref{fig:oldexpallopt}.
+
+<<table 3, echo=FALSE,results="asis",cache=TRUE>>=
+coefs = as.data.frame(summary(old_unhabitual)$coefficients[,c(1,2,4,5)])
+
+coefs[,1] = round(coefs[,1],digits=2)
+coefs[,2] = round(coefs[,2],digits=2)
+coefs[,3] = round(coefs[,3],digits=2)
+coefs[,4] = ifelse(coefs[,4] > .05, paste(round(coefs[,4],digits=1),sep=""),
+ifelse(coefs[,4] < .001,"\\textbf{<.001}",
+ifelse(coefs[,4] < .01, "\\textbf{<.01}", "\\textbf{<.05}")))
+
+colnames(coefs) = c("$\\beta$","SE($\\beta$)", "\\textbf{t}","\\textbf{p}")
+
+prednames = data.frame(PName=row.names(coefs),NewNames=c("Intercept","`!' vs. `Oh yeah...'","`.' vs. Relevance Markers","Common Ground: Ordinary","Belief: Post-utterance","`!' vs. `Oh yeah' * Common Ground","`.' vs. Relevance Markers * Common Ground","`!' vs. `Oh yeah' * Belief","`.' vs. Relevance Markers * Belief","Common Ground * Belief","`!' vs. `Oh yeah' * CG * Belief","`.' vs. Relevance Markers * CG * Belief"))
+
+row.names(coefs) = prednames$NewNames[prednames$PName == row.names(coefs)]
+
+latex(coefs,file="",title="",table.env=TRUE,booktabs=TRUE,caption="Replicated Experiments 1-3: conventionally \\textit{non-habitual} (\\textit{apple-buying}) activities analysis.",label="tab:oldexpallopt")
+@
+
+\begin{figure}\begin{center}
+<<suppfig2, fig.width=8, fig.height=4.5, echo=FALSE, cache=TRUE>>=
+all.data_plot <- old_unhabitual.data
+all.data_plot$world <- factor(all.data_plot$world, levels=c("ordinary","wonky"))
+all.data_plot$condition <- factor(all.data_plot$condition,levels=c("before","after"))
+# summary(habitual.data_plot)
+# str(habitual.data_plot)
+
+dodge <- position_dodge(width = 0.85)
+
+all.summary <- all.data_plot %>%
+  group_by(experiment, world, condition) %>%
+  summarise(val = mean(rating))
+
+# all.summary
+
+all.data_plot$experiment <- fct_recode(all.data_plot$experiment, "Exclamation"="exclamation","Oh yeah, and..."="ohyeah","Period"="period")
+all.summary$experiment <- fct_recode(all.summary$experiment, "Exclamation"="exclamation","Oh yeah, and..."="ohyeah","Period"="period")
+
+ggplot(all.data_plot, aes(x = world, y = rating, fill = condition)) + 
+  geom_violin(position = dodge, width=0.33) +
+  facet_grid(. ~ experiment) + 
+  geom_boxplot(width=.2, aes(fill=NULL,group=interaction(world,condition)), fill="white", position = dodge) +   
+  geom_point(data = all.summary, aes(y = val), position = dodge, shape=21) +
+  geom_line(data = all.summary[all.summary$world=="ordinary" & all.summary$experiment=="Period",], aes(y = val, group = world), position = position_dodge(width = 0.85), arrow = arrow(angle = 25, ends = "last", type = "closed", length = unit(0.1, "inches"))) +
+  geom_line(data = all.summary[all.summary$world=="wonky" & all.summary$experiment %in% c("Oh yeah, and...","Period"),], aes(y = val, group = world), position = position_dodge(width = 0.85), arrow = arrow(angle = 25, ends = "last", type = "closed", length = unit(0.1, "inches")))+
+  geom_line(data = all.summary[all.summary$experiment=="Exclamation"| (all.summary$experiment=="Oh yeah, and..." & all.summary$world=="ordinary"),], aes(y = val, group = world), position = position_dodge(width = 0.85))+
+  ylab("Activity Frequency Estimate") +
+  xlab("Common Ground Context") +
+  theme(legend.position="top") +
+  scale_colour_manual(values = c("#000000", "#DF0101")) +
+  theme(axis.text.x = element_text(size=12, colour="black")) +
+  theme(axis.text.y = element_text(size=12, colour="black")) +
+  theme(axis.title.y=element_text(size=15))+
+  theme(axis.title.x=element_text(size=15))+ 
+  theme(legend.text=element_text(size=12,face = "italic"))+scale_fill_grey(start = 0.8, end = 0.2, name="Beliefs:", breaks=c("before","after"), labels=c("pre-utterance","post-utterance")) + scale_y_continuous(breaks = c(0,25,50,75,100), labels = c("0 (Never)", "25", "50", "75", "100 (Always)")) + scale_x_discrete(labels = c("ordinary","wonky\n('non-payer')"))
+@
+\end{center}
+\caption{Replicated Experiments 1-3: \textit{conventionally non-habitual} (\textit{apple-buying}) activities analysis.}
+\label{fig:oldexpallopt}
+\end{figure}
+
+\pagebreak
+
+\section{Experimental Stimuli}\label{stimuli}
+
+\subfile{sections/stimuli.tex}
+
+\pagebreak
+
+\section{Power Analysis}\label{power}
+
+<<eval=FALSE, tidy=TRUE, size="small", tidy.opts=list(width.cutoff=55)>>=
+# Power by simulation for a normally distributed continuous 
+# outcome with subjects, items, and residual variability
+
+# Population parameters
+# mu: underlying mean of the outcome in the reference group
+# betaN: effect size of predictor or interaction
+# sdItem: sd of random effect at the item level
+# sdSubject: sd of random effect at the subject level
+# sdResid: sd of residual error
+
+# Design parameters
+# nSubjects: number of subjects in simulation
+# nIterations: number of iterations in simulation
+
+fnPower <-
+  function(mu,beta1,beta2,beta3,beta4,beta5,beta6,beta7,
+           beta8,beta9,beta10,beta11,sdItem,sdSubject,
+           sdResid,nSubjects,nIterations,
+           dots=TRUE){
+    start.time <- Sys.time()
+    progress <- ") \n----|--- 1 ---|--- 2 ---|--- 3 ---|--- 4 ---| --- 5 \n"
+    if(dots) cat("Simulations (",nIterations,
+           progress,
+           sep="")
+# objects to store pvalue, beta, and standard error from each iteration 
+# of simulation
+    pVals <- betaVals <- seVals <- matrix(NA,nrow=nIterations,ncol=11)
+# build design matrices
+    m <- matrix(NA,nrow=nSubjects*4,ncol=7)
+    colnames(m) <- c("worker","exp.alike","exp.diff","story","condition",
+                     "context","slider")
+    m[,1] <- rep(1:nSubjects,each=4)
+    m[,2] <- rep(c(-0.5,0.5,0),each=4,length.out=length(m[,2]))
+    m[,3] <- rep(c(-0.3333333,-0.3333333,0.6666667),each=4,
+                 length.out=length(m[,3]))
+    i <- 1
+    while(i < (length(m[,4]))){ m[i:(i+3),4] <- sample(1:24,size=4,
+                                                       replace=FALSE)
+    i <- i+4 }
+    m[,5] <- rep(c(-0.5, 0.5))
+    m[,6] <- rep(c(-0.5, 0.5),each=2)
+    # i <- 1 # (when testing for-loop)
+    for(i in 1:nIterations){
+      
+  # draw random effects
+      itemRE <- rnorm(24,0,sdItem)
+      subjRE <- rnorm(nSubjects,0,sdSubject)
+      residRE <- rnorm(nrow(m),0,sdResid)
+      
+  # create outcome
+      y <- mu + beta1*m[,2] + beta2*m[,3] + beta3*m[,6] + beta4*m[,5] + 
+        beta5*m[,2]*m[,6] + beta6*m[,3]*m[,6] + beta7*m[,2]*m[,5] + 
+        beta8*m[,3]*m[,5] + beta9*m[,6]*m[,5] + beta10*m[,2]*m[,6]*m[,5] +
+        beta11*m[,3]*m[,6]*m[,5] + itemRE[m[,4]] + subjRE[m[,1]] + residRE
+      m[,7] <- y
+      dm <- as.data.frame(m)
+      dm$worker <- as.factor(dm$worker)
+      dm$story <- as.factor(dm$story)
+  # fit model, store p-value, beta and standard error
+      o <- lmer(slider ~ exp.alike + exp.diff + context + condition + 
+                  exp.alike:context + exp.diff:context + 
+                  exp.alike:condition + exp.diff:condition + 
+                  context:condition + exp.alike:context:condition + 
+                  exp.diff:context:condition + (1|story) + (1|worker),dm)
+      pVals[i,] <- coef(summary(o))[2:12,5]
+      betaVals[i,] <- coef(summary(o))[2:12,1]
+      seVals[i,] <- coef(summary(o))[2:12,2]
+      
+      if(dots) cat(".",sep="")
+      if(dots && i %% 50 == 0) cat(i,"\n")
+      
+    }
+    
+    if(dots) cat("\nSimulation Run Time:",round(difftime(Sys.time(),
+                 start.time,units="hours"),3)," Hours \n")
+    
+# calculate power
+    powerOut <- apply(pVals,2,function(x) length(x[x<0.05])/length(x))
+    return(list(power=powerOut,p=pVals,beta=betaVals,se=seVals))
+  }
+
+
+# calibrate by setting betas = 0; histograms should all look level, 
+# with about 5% of results significant by chance
+outCalibrate <- fnPower(mu=61.0444,beta1=0,beta2=0,beta3=0,beta4=0,
+                        beta5=0,beta6=0,beta7=0,beta8=0,beta9=0,beta10=0,
+                        beta11=0,sdItem=10.138,sdSubject=9.285,
+                        sdResid=21.839,nSubjects=1200,nIterations=10000,
+                        dots=TRUE)
+outCalibrate$power
+hist(outCalibrate$p[,1],main="beta1",xlab="p value")
+hist(outCalibrate$p[,2],main="beta2",xlab="p value")
+hist(outCalibrate$p[,3],main="beta3",xlab="p value")
+hist(outCalibrate$p[,4],main="beta4",xlab="p value")
+hist(outCalibrate$p[,5],main="beta5",xlab="p value")
+hist(outCalibrate$p[,6],main="beta6",xlab="p value")
+hist(outCalibrate$p[,7],main="beta7",xlab="p value")
+hist(outCalibrate$p[,8],main="beta8",xlab="p value")
+hist(outCalibrate$p[,9],main="beta9",xlab="p value")
+hist(outCalibrate$p[,10],main="beta10",xlab="p value")
+hist(outCalibrate$p[,11],main="beta11",xlab="p value")
+
+nSubjects <- seq(1200,2400,100)
+
+st <- c()
+for(i in 1:length(nSubjects)){
+  st[[paste("subj",nSubjects[i])]] <-
+    fnPower(mu=61.2216,beta1=1.3018,beta2=4.3355,beta3=38.0383,
+            beta4=-0.4559,beta5=-0.8669,beta6=2.4416,beta7=0.6141,
+            beta8=6.6776,beta9=-12.6572,beta10=0.4207,beta11=6.1601,
+            sdItem=10.138,sdSubject=9.285,sdResid=21.839,
+            nSubjects=nSubjects[i],nIterations=1000,dots=TRUE)
+}
+@
+
+<<echo=FALSE, tidy=TRUE, cache=TRUE>>=
+library(rlist)
+nSubjects <- seq(1200,2400,100)
+st <- list.load("../code/results/st.rds")
+@
+
+
+\subsection{Plot}
+
+Figure \ref{fig:power} shows a plot of the power curves for the critical common ground by belief measure interaction, a comparison of that effect across Experiments 1 and 2, and another comparison across Experiment 3 and Experiments 1/2 (as a group).  We expect a robustly replicable common ground by belief measure interaction (power $= 1.00$ at all sample sizes), no significant difference between Experiments 1 and 2 (power $\leq 0.1$ at all sample sizes), and a significant difference between Experiment 3 and Experiments 1/2 (power $\geq$ 0.85 at a sample size of 2100 or more).
+
+\begin{figure}\begin{center}
+<<powerfig, tidy=TRUE, fig.width=7, fig.height=4, cache=TRUE, echo=FALSE>>=
+powerVals <- lapply(st,function(x) x[[1]])
+plot(nSubjects,unlist(lapply(powerVals,function(x) x[[9]])),type='l',
+     ylab='Power',xlab="Number of subjects",ylim=c(0,1),lty=1)
+label1 <- "Common Ground * Belief Measure"
+label2 <- "Ex. 1 vs. 2 CG * BM"
+label3 <- "Ex. 1+2 vs. 3 CG * BM"
+lines(nSubjects,unlist(lapply(powerVals,function(x) x[[10]])),lty=2)
+lines(nSubjects,unlist(lapply(powerVals,function(x) x[[11]])),lty=3)
+legend(x=1700,y=0.5,legend=c(label1,label2,label3),lty=c(1,2,3),
+       bty='n',cex=0.8)
+@
+\end{center}
+\caption{Power curves for effects of interest}
+\label{fig:power}
+\end{figure}
+
+
+\end{document}

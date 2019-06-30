@@ -1,0 +1,412 @@
+Taken together, this series of experiments shows that comprehenders
+react to informationally redundant utterances by shifting their beliefs
+about the common ground, such that the utterances are more
+\enquote{informative} in context, thus increasing their utility. In
+other words, comprehenders expect for speaker utterances to have a
+certain level of informational utility, and they adjust their beliefs
+about the world and/or utterance meaning when such expectations are
+violated. In fact, this occurs even though informational redundancy, or
+overinformativity, in itself has no obvious negative impact on basic
+message comprehension. This is consistent with theoretical accounts of
+what constitutes \enquote{cooperative} communicative behavior (Grice,
+1975), as well as of comprehenders' attempts to resolve speaker behavior
+that at face value does not appear particularly rational. However, as
+the third experiment shows, the effect is significantly modulated by how
+the utterance is framed in the discourse, supporting the hypothesis that
+inference strength is sensitive to utterance form. Overall, we provide
+robust evidence that informational redundancy is perceived as anomalous,
+and that comprehenders alter their situation models to accommodate it,
+particularly when there's evidence that there was specific intent behind
+the utterance.
+
+As discussed in Section \ref{related-work}, while redundancy may not
+obviously impair comprehension (unlike underinformativeness),
+comprehenders may nevertheless prefer or expect that speakers be
+relatively concise, as it allows them to receive more information in a
+shorter span of time. Excessive redundancy may make it more difficult to
+follow the point of a conversation, or to reliably distinguish important
+from unimportant information. Provided that speakers are aware of
+comprehender preferences, and are likely independently motivated to
+conserve articulatory energy, it would be expected that comprehenders
+should perceive highly and unnecessarily redundant utterances (e.g.,
+\enquote{\emph{yellow banana},} \enquote{\emph{he went shopping and paid
+the cashier!}}) as such. Correspondingly, they should infer that the
+speaker is either not behaving rationally\footnote{See the discussion of
+  Gricean vs.~Bayesian rationality in Section \ref{speaker-rationality}
+  below.}, or is conveying a message or background world state that is
+unusual from the comprehender's perspective. \enquote{Moderately}
+redundant utterances, such as when a speaker points out
+\enquote{\emph{the \textbf{long} fork}} in the absence of another fork
+to compare, are not particularly useful in most tasks, but at least
+provide information that can't otherwise be inferred from the rest of
+the utterance, and do not require much additional articulatory effort.
+We believe that the clearest results on how redundancy is perceived
+should come from relatively costly utterances like the ones investigated
+here, or what we term \emph{highly redundant utterances}.
+
+Another area of contribution is that we illustrate a case in which
+comprehenders are willing to revise the assumed common ground of the
+discourse, in order to accommodate a perceived violation in the
+informational utility of an utterance. The redundant utterance violates
+conversational norms, or comprehender expectations, under the default
+assumed world state, but not the alternate \enquote{\emph{wonky}} world
+state (e.g., one in which \emph{John} is a habitual non-payer). Hearing
+such an utterance therefore biases comprehenders towards assuming that
+the alternate, or \emph{wonky}, world state holds. Unlike shifting
+assumptions about intended utterance meaning, this is a strategy of
+accommodating potential violations of conversational norms that has not
+received much attention to date, with the notable exception of \citet{Degen2015a}. The shifting of common ground assumptions appears to be an
+important, and surprisingly understudied strategy for interpreting
+utterances that, at face value, violate conversational norms, and
+neglecting it as a possibility likely results in misinterpretation of
+online effects and under-detection of pragmatic inferences in
+experimental work.
+
+Finally, we show that semantically \enquote{vacuous} utterance features
+(those that do not alter the propositional content of an utterance), in
+the form of implicit prosody or discourse markers, significantly
+influence the extent to which comprehenders are willing to draw an
+inference predicted by pragmatic theories of rational speaker behavior.
+Aside from the case of contrastive prosody \citep{Bergen2015,
+Kurumada2012, Ward1985}, this has not to date
+been systematically investigated in formal or experimental literature,
+and most likely also extends to other pragmatic phenomena. In our case,
+we argue that comprehenders are carefully weighing and evaluating
+multiple cues of how likely it is that a speaker intended to communicate
+a particular meaning, or that a deviation from expected utterance form
+and/or meaning signifies a common ground or background state that is
+substantially different from what was initially assumed.
+
+\subsection{Processing difficulty and
+surprisal}\label{processing-difficulty-and-surprisal}
+
+This subsection is primarily aimed at those who are interested in the
+processing cost of computing pragmatic inferences, or computational
+models of language processing. A question that we raise for future
+research is whether encountering informationally redundant utterances
+results in measurable processing difficulty on the part of
+comprehenders. We further argue that this has significant implications
+for current models of language processing.
+
+As \citet{Walker1993} points out, informationally redundant utterances are
+common in natural dialog - they therefore cannot be regarded as edge
+cases, and must be integrated into our models of language. We believe,
+however, that they pose several unique challenges for formal models of
+language processing. There are several potential sources of processing
+difficulty associated with such utterances, resulting on the one hand
+from processing the \emph{surface form} (the particular string of words
+that comprises the utterance), and on the other hand from computing the
+pragmatic inference itself\footnote{Although there is debate currently
+  over just how rapidly or efficiently comprehenders are able to make
+  pragmatic inferences, much of the evidence converges on there
+  frequently being some cost, even for relatively conventionalized
+  inferences \citep{Degen2016}.}. First, there could be
+processing difficulty associated with the (un)predictability of the
+\emph{surface form} of the utterance: \emph{John paid the cashier!} is
+an utterance we would not expect to hear in a ordinary context, as
+paying the cashier is normal, and reading unpredictable utterances such
+as this should cause some difficulty \citep{Smith2013}\footnote{It
+  should however be noted that while pragmatic processing must, on some
+  level, incur cost, it may be sufficiently small and poorly localized
+  that one would have difficulty detecting it using traditional online
+  measures (eye-tracking, self-paced reading). Further, it is possible
+  that the ease of semantic integration, in the case of conventionally
+  habitual activities, would eclipse any difficulty due to the
+  unpredictablity of the utterance itself -- although the two exactly
+  cancelling each other out, either way, is relatively unlikely.}.
+Second, we work on the assumption that context-dependent implicatures
+incur processing cost \citep{Levinson2000, Sedivy2007}, although there is
+evidence that processing may be relatively rapid, provided the context
+adequately supports the inference \citep{Degen2015a, Grodner2010}.
+
+\subsubsection{Speaker rationality}\label{speaker-rationality}
+
+First, we want to briefly talk about the link between Gricean notions of
+rationality, and an information-theoretic or Bayesian approach to
+rational speaker behavior. Rationality in the Gricean sense concerns
+whether speakers are constructing their utterances in a manner that is
+consistent with their goals, which is accurately communicating their
+message to a comprehender \citep{Grice1975}. To this end,
+\emph{underinformativeness} (saying less than needed), for example, is
+clearly inconsistent with this goal. Saying \emph{more} than needed,
+however, does not clearly impair one's ability to accurately communicate
+a message - hence, the general uncertainty over whether
+overinformativeness violates Gricean norms. In the information-theoretic
+tradition, the speaker's goal is to expend no more energy than needed to
+accurately transmit a message \citep{Jaeger2010}. Expending more effort than
+required to accurately transmit a message is inefficient from the
+speaker's perspective, and therefore not particularly rational, even
+while it is worse from a communication standpoint to not expend
+\emph{enough} effort. The two traditions therefore make roughly similar
+predictions -- weakly in the Gricean case, and more strongly in the
+information-theoretic: that redundancy should be avoided.
+
+What the Gricean tradition adds to this mix is an idea of how
+comprehenders might interpret deviations from the communicative norm;
+traditional information-theoretic accounts make no predictions about how
+perceived utterance meaning might be altered when there's a mismatch
+between the expected and perceived utterance, beyond the possibility
+that intended utterance form or structure may be assumed to be something
+different from what was perceived, or that perception itself may be
+altered. \citet{Jaeger2017} do note that if the speaker's aim is to
+accurately communicate a message, then they must take into account the
+signal, or \emph{surface form}, that comprehenders expect to hear for
+that particular message. If they produce something that deviates from
+the expected signal, then even if the utterance is perceived accurately,
+and believed to have been perceived accurately, comprehenders may be led
+to assume a different intended message, which is more compatible with
+the signal that was in fact produced. It may be possible to fully
+reconcile the various traditions, but we leave this to future work (see,
+however, \citealp{Frank2012}, for a formal model of how speakers' and
+comprehenders' reasoning about each others' intentions might account for
+and predict utterance choice and pragmatic interpretation, while
+incorporating cost-based pressures on production).
+
+While the above covers rationality from the point of view of the
+speaker, information-theoretic models of language processing propose
+that comprehenders also have strong expectations for how things will be
+said, and encounter processing difficulty (reflected by a variety of
+online measures) when these expectations are violated. In this
+tradition, what comprehenders specifically have expectations about is
+the \emph{form} of utterances. After hearing something like \emph{John
+went to the store}, they do not expect for \emph{He paid the cashier!}
+to follow, as it is redundant: they are therefore surprised by the
+\emph{form} the discourse has taken. The Gricean tradition similarly
+suggests that comprehenders have a base expectation that speakers will
+behave rationally, and interpret utterances literally or non-literally
+in a manner that will, generally, help to match this expectation \citep{Grice1975, Levinson2000}. We explicitly propose also that comprehenders
+have expectations as to the \emph{state of the world} conveyed by the
+speaker. In the above example, the state of the world is precisely the
+one that is expected (i.e., one in which \emph{John} has paid the
+cashier). The two forms of predictability - \emph{form-based} and
+\emph{meaning-based} - are often treated as essentially identical, but
+as we discuss in the following section, need to be disentangled to make
+accurate predictions about language processing.
+
+\subsubsection{Surprisal}\label{surprisal}
+
+An area where our work might have particular implications is in formal
+modeling of language processing. The mathematical concept of
+\emph{surprisal} \citep{Hale2001, Levy2008}, traditionally, represents how
+(un)predictable a word or a string of words is in context. Specifically,
+it is the negative log of the probability of encountering a specific
+word or utterance. As hinted in the name, words or utterances that one
+might expect to see in a given context have \emph{low} surprisal values,
+and those that one would \emph{not} expect to see in a given context
+have \emph{high} surprisal values. \citet{Smith2013} show that
+difficulty in processing a word (or string of words), as reflected in
+online measures like reading times, is proportional to the word's
+unpredictability in context, or \emph{surprisal}. In other words,
+comprehenders read or process words or utterances that are predictable
+(low \emph{surprisal}) quickly, and those that are unpredictable (high
+\emph{surprisal}) slowly. An utterance you don't expect to see in
+ordinary contexts (\emph{John paid the cashier!}) should incur some
+processing difficulty for comprehenders. However, a problem with this
+account is that it treats all forms of \emph{predictability} similarly.
+Consider, for example, two utterances that one might be (hypothetically)
+equally likely to hear: \emph{John paid the cashier!} and \emph{John
+punched the cashier!}. Processing theories which take into account only
+the predictability of an utterance would predict similar processing
+difficulty or processing times for both.
+
+However, this is not only conceptually problematic, but would likely
+make the wrong predictions. Considering only \emph{surface-level} or
+\emph{form-based} predictability (the predictability of the string of
+words, in context) doesn't take into account the fact that the
+utterances are unpredictable for entirely different reasons:
+dispreference for redundancy, vs.~event unpredictability. Further, the
+first (\emph{cashier-paying}) utterance may contribute additional
+processing cost due to encountering pragmatic abnormality, or due to the
+need to make a pragmatic inference to resolve the apparent redundancy.
+In this case, despite identical surface-form predictability, we would
+expect that conceptually redundant utterances would be associated with
+greater processing difficulty. Of course, it may also be the case that
+conceptually redundant utterances are relatively easy to process, due to
+the relative ease of semantic integration (there are no unusual or
+unexpected facts to integrate into one's world model\footnote{Of course,
+  our experiments make clear that many comprehenders do end up
+  integrating an unusual common ground belief (\emph{John is a habitual
+  non-payer}) when trying to resolve the apparent pragmatic violation.
+  For those comprehenders, we would predict that the processing cost
+  would, in fact, be greater than the cost of simply integrating an
+  unusual event into one's world model.}). Either case, however, poses
+problems for the link between \emph{surprisal} and processing
+difficulty, as utterances matched on predictability (and, consequently,
+\emph{surprisal}) would still not end up with identical processing
+difficulty or reading times.
+
+Several other interesting implications remain for surprisal theory, or
+the claimed link between \emph{surprisal}, and reading times, or
+processing cost. First, it is commonly assumed that processing
+difficulty, in the context of this theory, is caused by encountering a
+particularly unexpected \emph{form}. However, in our redundant
+\emph{cashier-paying} example, the \emph{form} of the utterance is
+unexpected \emph{precisely} \emph{because} the predictability of the
+utterance meaning is so high. In other words, in order for comprehenders
+to have expectations about the \emph{form} of the utterance, they must
+also have expectations about the global \emph{meaning} conveyed by the
+utterance, as it is precisely the meaning that renders the form
+surprising to comprehenders. We therefore consider it a significant
+shortcoming of these theories that they frequently either do not
+consider the predictability of meaning (what can also be termed
+\emph{conceptual} predictability), beyond the truth-conditional meaning
+of an utterance, or treat the two probabilities, that of \emph{form} and
+\emph{meaning}, as essentially identical -- whereas we have argued that
+they not only can influence each other, but in fact can diverge
+systematically at their extreme values. In the following subsection,
+intended for readers interested in language processing and formal
+language models, we talk about this relationship in more detail, as well
+as the implications it has for what \emph{types} of language models
+could in principle address the issues we've outlined.
+
+\subsubsection{Formal models of language
+processing}\label{formal-models-of-language-processing}
+
+The predictability of informationally redundant utterances, as we've
+mentioned, should be fairly low at the \emph{surface} level, and reading
+times have been argued to reflect the predictability of
+\emph{surface-level} linguistic events, rather than the conceptual
+predictability of the scenarios they describe, i.e., their broader
+\emph{meaning} \citep{Smith2013}. There is evidence, however, that
+comprehenders predict at multiple levels: for example, the \emph{event}
+(in our case, \emph{meaning}) level, as well as at the level of
+\emph{surface form} \citep{Kuperberg2016}, although it remains
+unclear how these levels interface (e.g., if comprehenders expect
+something predictable at the \emph{event} level to go unmentioned at the
+\emph{surface} level). In the case of surprisal theory \citep{Hale2001,
+Levy2008}, this may have interesting implications, given that the
+surprisal values that have been linked to processing times have largely
+been obtained using formal (computational) language models. If
+informationally redundant utterances result in longer reading times,
+it's unclear how formal models could accurately generate the high
+surprisal values one would expect for those utterances\footnote{For that
+  matter, if they result in shorter reading times, as speculated in the
+  previous section, there would similarly be a problem given that the
+  processing difficulty should not rely simply on \emph{surface-level}
+  probability, but also on \emph{event} or \emph{meaning} probability,
+  which, as we explain, current models cannot adequately integrate.}.
+
+For example, in the case of our \emph{conventionally habitual} event
+utterance, in the \emph{ordinary} vs. \emph{wonky} common ground, the
+event description (\emph{John paid the cashier}) consists of exactly the
+same string of words, with the preceding context identical stretching
+over multiple preceding sentences. The utterance is informationally
+redundant in the \emph{ordinary} context, and non-redundant in the
+\emph{wonky} context. Simple or even complex n-gram models, which can't
+represent long-distance dependencies, would not show any difference in
+predictability, and therefore would predict no differences in processing
+difficulty. Relatively sophisticated models which incorporate syntax or
+semantics, similarly, would not predict a difference, as there are no
+meaningful differences in syntactic structure, and semantic models would
+not have access to the relevant event-based information which
+distinguishes the utterances.
+
+Models of event sequences, which estimate \emph{event} (vs.~string)
+probability, may be able to estimate differences in predictability, and,
+consequently, processing difficulty, between utterances describing
+script-congruent and script-incongruent events (e.g., events likely and
+unlikely to be a part of \emph{grocery shopping}). However, the general
+prediction such models would make is that the more congruent an event is
+with an invoked script (i.e., the more predictable the event is given
+the script), the more predictable (and easy to process) the utterances
+which describe that event should be. There is no principled way, within
+this framework, to divide activities up into different \enquote{grades}
+of predictability, such that utterances describing \emph{moderately
+habitual} activities are easier to process than those describing
+\emph{not-so-habitual} activities, yet those describing \emph{very
+habitual} activities incur difficulty. In light of this, we suggest that
+to predict any processing difference between informationally redundant
+and non-redundant utterances, formal models of language comprehension
+would need to incorporate some form of pragmatic reasoning.
+
+Although attempts to build formal or computational language models may
+appear to have limited relevance to how humans process language - which
+is typically thought of as a seamless integration of information from
+the surrounding context - it should be recognized that humans do not
+make predictions about upcoming material based simply on the preceding
+string of words, as formally assumed by simple models of language
+processing and prediction. The vast majority of word/utterance sequences
+have never been previously encountered by a comprehender, and
+predictions concerning upcoming material cannot be based on them alone.
+Regardless of the modeling approach one takes, it must be concluded that
+humans also make predictions by keeping track of certain cues -
+semantic, syntactic, lexical, and pragmatic (e.g., whether a speaker is
+generally adhering to conversational norms). Thus, determining the
+specific cues that are necessary to accurately model language processing
+is also relevant to understanding how humans accomplish the same task,
+and what information they must keep track of in order to do so. There
+are two ways of elucidating which linguistic and contextual cues
+influence language comprehension: one may manipulate relevant cues in
+tightly controlled stimuli, and observe their influence on
+interpretation, or online measures such as reading times; or one may
+build formal language models which make specific, testable predictions
+regarding the influences of these cues on processing and comprehension.
+We believe that a combination of the two is likely to be the most
+fruitful approach.
+
+To summarize, we think that it would be informative to investigate the
+processing of informationally redundant utterances, using online
+measures such as eye-tracking of self-paced reading. On the one hand,
+there are many claims, but still relatively little data on the online
+processing of pragmatic inferences, and little is known about the cost
+(or efficiency) of pragmatic reasoning \citep{Degen2016}. The
+data that does exist is for the most part limited to scalar
+implicatures, which are often argued to be computed relatively
+automatically \citep[but see][]{Huang2009}. On the other hand,
+determining whether informational redundancy contributes to the
+processing cost of utterances, above and beyond the surface
+predictability of those utterances, is critical to determining whether
+formal language models need to integrate pragmatic reasoning to
+correctly predict processing cost. The main challenge to using online
+measures is that to compare (for example) the reading times of
+utterances, they must be matched on all factors which may affect reading
+times, but are irrelevant to the experimental manipulation (in a case
+such as ours: length, word frequencies, etc.). This makes it very
+difficult to compare reading times for utterances that are not identical
+in their surface form. One possibility is to compare reading times for
+otherwise identical phrases that are informationally redundant in one
+context, but not the other, as with our \emph{cashier-paying} examples
+in the \emph{ordinary} and \emph{wonky} common grounds. We leave this to
+future work.
+
+\subsection{Perspectives for future work and
+conclusion}\label{perspectives-for-future-work-and-conclusion}
+
+There are several avenues for further research. First, the range of
+inferences that comprehenders might draw from informationally redundant
+utterances may extend well beyond what we tested in this series of
+experiments. For instance, in the absence of a possible pragmatically
+felicitous interpretation, as the one suggested by our response measure,
+comprehenders may simply assume that a speaker is being uncooperative,
+having some production difficulty, or has unconventional speaking
+patterns \citep[cf.][]{Grodner2011, Pogue2016}. There is
+also the possibility that informationally redundant event descriptions,
+especially as seen in Experiment 3, are initially interpreted as likely,
+and possibly aborted, temporal or causal anchors for more
+\enquote{interesting} information. For example, in the context of a
+\emph{grocery trip}, an \enquote{informationally redundant} description
+such as \emph{John paid the cashier}, when followed by \emph{with euros
+instead of dollars}, would likely not be considered anomalous. In this
+case, the description would not be redundant in its broader context, as
+it's part of a more extended description that overall contributes
+previously unknown, or not easily inferable information. These
+hypotheses might be investigated using rating studies, sentence or
+passage completion studies, or more naturalistic tasks where
+participants' behavior provides a clue as to their interpretation of
+these utterances.
+
+Overall, our results strongly suggest that, at least at face value,
+informational redundancy is perceived as anomalous. However,
+comprehenders are able to accommodate the provision of
+\enquote{unnecessary} information by altering their pre-utterance
+beliefs about individuals' behavior, or, more broadly, the common ground
+between speaker and listener. The results also complement work in the
+dialogue literature \citep{Walker1993}, which illustrates that
+informationally redundant utterances are frequently used to convey
+\enquote{informationally useful} non-literal content. They raise
+presently important questions regarding which cues are systematically
+tracked by comprehenders, as well as how those cues are integrated
+during pragmatic interpretation. Finally, they address the pragmatic
+interpretation of complex utterances, not bound to specific classes of
+lexical items, which to date have largely been treated as either too
+complex or too idiosyncratic to study systematically.

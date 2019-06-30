@@ -1,0 +1,23 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1512385777075.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "1554636215",
+    "id" : "D34314F6",
+    "lastKnownWriteTime" : 1512391145,
+    "last_content_update" : 1512391145098,
+    "path" : "~/Shared/referring-expressions/PhD 12.2017/slam.Rmd",
+    "project_path" : null,
+    "properties" : {
+        "cursorPosition" : "29,127",
+        "last_setup_crc32" : "",
+        "scrollLine" : "0"
+    },
+    "relative_order" : 8,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_markdown"
+}

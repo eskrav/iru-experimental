@@ -1,0 +1,72 @@
+# rm(list=ls())
+
+library(tidyverse)
+library(lme4)
+
+dataI <- read_csv("/Users/ekravtch/Shared/informationally-redundant-utterances/data/incoherent/processed_data.csv", col_types = cols(
+  workerid = col_factor(levels = NULL),
+  list = col_factor(levels = NULL),
+  item = col_factor(levels = NULL),
+  condition = col_factor(levels = NULL),
+  answer = col_factor(levels = NULL)
+))
+
+glimpse(dataI)
+
+summary(dataI)
+
+dataI %>%
+#  filter(condition != "contradictory") %>%
+  group_by(item,condition) %>%
+  summarise(yes = round(sum(answer=="\"Yes, the scenario is possible\"")/sum(!is.na(answer)),2)) %>%
+#  arrange(yes) %>%
+  print(n=Inf)
+
+dataI[dataI$item==9 & dataI$condition=="typical",]$sentence[1]
+dataI[dataI$item %in% c(4,5,12,18,10,13,16,19) & dataI$condition=="typical",]$sentence[c(1,16,31,46,62,78,94,110)]
+
+model <- glmer(answer ~ condition + (condition|workerid) + (condition|item), data=dataI, family=binomial)
+summary(model)
+coef(model)
+
+dataI %>%
+  filter(workerid=="59ccabb95e01580001977a27") %>%
+  select(item,condition,answer) %>%
+  print(n=Inf)
+
+dataI %>%
+  group_by(workerid,condition) %>%
+  summarise(yes = round(sum(answer=="\"Yes, the scenario is possible\"")/sum(!is.na(answer)),2)) %>%
+  print(n=Inf)
+
+# 58f2748a08ed4b0001bf11fb, 5910718b5cad260001603102, 5912691bd8e75a000120900c, 59c0296e754a19000111c305, 5960f41387bef300013a4b6a, 59ccd95719d3170001b1d165 (?), 59c23845754a19000111c72c, 59ccabb95e01580001977a27
+
+possiblyBad = c("58f2748a08ed4b0001bf11fb", "5910718b5cad260001603102", "5912691bd8e75a000120900c", "59c0296e754a19000111c305", "5960f41387bef300013a4b6a", "59c23845754a19000111c72c", "59ccabb95e01580001977a27")
+
+dataI %>%
+#  filter(!(workerid %in% possiblyBad)) %>%
+  group_by(item,condition) %>%
+  summarise(yes = round(sum(answer=="\"Yes, the scenario is possible\"")/sum(!is.na(answer)),2)) %>%
+  print(n=Inf)
+
+filtered <- dataI %>%
+  filter(!(workerid %in% possiblyBad)) %>%
+  group_by(item,condition) %>%
+  summarise(yes = round(sum(answer=="\"Yes, the scenario is possible\"")/sum(!is.na(answer)),2)) %>%
+  print(n=Inf)
+
+filtered %>%
+  filter(condition != "contradictory") %>%
+  filter("yes" < 0.90) %>%
+  print(n=Inf)
+
+# 5, 9
+
+dataI[dataI$item==5 & dataI$condition=="typical",]$sentence[1]
+dataI[dataI$item==9 & dataI$condition=="typical",]$sentence[1]
+
+##### 5?, 9?: typical kind of low
+
+model <- glmer(answer ~ condition + (condition|item) + (condition|workerid), data=as.dataI.frame(filter(filtered, condition != "contradictory")), family=binomial)
+summary(model)
+coef(model)

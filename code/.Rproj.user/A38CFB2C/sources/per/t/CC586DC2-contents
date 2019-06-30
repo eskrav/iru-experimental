@@ -1,0 +1,720 @@
+%% This is a TeX template for the a0poster class, created by Olena Steshenko, specially for SFB 1102
+%% Information density and linguistic encoding.
+%% Universität des Saarlandes.
+%% Credits: Template is inspired by the Fancy Poster template created by Ed Long from CoMPLEX division at University College London.
+%% Further modifications by Dave Howcroft.
+
+\documentclass[a0,portrait]{a0poster}
+%%%Load packages
+%\usepackage{multicol} 									%several-column layout
+\usepackage[left=2cm,right=2cm,bottom=0cm,top=0cm]{geometry}	 %Reset margins
+\usepackage[T1]{fontenc}
+\usepackage{uarial}
+\renewcommand*{\familydefault}{\sfdefault}
+\usepackage{graphicx}
+\usepackage{pifont}
+%\usepackage{ngerman}
+
+\newcommand{\xmark}{\ding{55}}
+
+\usepackage[applemac]{inputenc}
+
+\usepackage{textcomp}
+%\usepackage{mathpazo}			%Load palatino font & pazo math
+\usepackage[usenames,dvipsnames,table]{xcolor}				%Needed for colour boxes & coloured text
+
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{linguex}
+\usepackage{textpos}
+\usepackage{boxedminipage}
+\usepackage{boiboites}
+\usepackage{changepage}
+% \usepackage{fixltx2e}
+\usepackage{float}
+\usepackage{soul}
+\usepackage{pstricks}
+\usepackage{multirow}
+\usepackage{hanging}
+\renewcommand*\familydefault{\sfdefault} %% Only if the base font of the document is to be sans serif
+%\usepackage{uarial}
+\usepackage{pst-text}
+\usepackage{enumitem}
+\usepackage{setspace}
+\usepackage{fix-cm}
+
+\usepackage{tikz}
+\usetikzlibrary{shapes,decorations}
+\usepackage{caption} %to use captions outside of figure environment. Figures are not supported in the minipage environments.
+
+\newcommand{\flag}[1]{\textcolor{red}{\bf #1}}
+\newboxedtheorem{defi}{Scripts}{thCounter}
+
+
+%Main colours
+\definecolor{uniblue}{RGB}{16,66,122}
+\definecolor{sfbgreen}{rgb}{0.41, 0.74, 0.27}
+\definecolor{black}{rgb}{0.0, 0.0, 0.0}  
+\definecolor{honeydew}{rgb}{0.94, 1.0, 0.94} %light green, if you want to add some light background
+\definecolor{lighthoneydew}{RGB}{247, 255, 247} %light green, if you want to add some light background
+\definecolor{bayleaf}{RGB}{129, 165, 148}
+\definecolor{tealblue}{rgb}{0.21, 0.46, 0.53}
+\definecolor{darktealblue}{RGB}{45, 98, 113}
+\definecolor{oldgold}{RGB}{160, 136, 26}
+\definecolor{satinsheengold}{RGB}{191, 157, 0}
+\definecolor{mediumtealblue}{rgb}{0.0, 0.33, 0.71}
+\definecolor{obnoxiousblue}{RGB}{2,157,159}
+\definecolor{favoritered}{RGB}{219,40,8}
+\definecolor{violingold}{RGB}{204,163,41}
+
+\setlength{\arrayrulewidth}{1pt}
+
+\fboxsep=0.5cm						%Padding between box and text
+\fboxrule=2mm							%Width of box outline
+
+%\setlength{\columnsep}{1cm}				%Set spacing between columns
+%Uncomment for lines as column separators:
+%\setlength{\columnseprule}{1pt}
+
+
+%%______TITLE___________
+\makeatletter							%Needed to include code in main file
+\renewcommand\@maketitle{%
+%\null									%Sets position marker
+{
+\center						%uncomment if you want your title begin flushleft
+\color{black}\VeryHuge\textbf		%Set title font and colour
+\@title \par}%
+\vskip 0.5cm%					%distance between title and author
+{
+\color{black}\huge				%Set author font and colour
+\center						%uncomment if you want author begin flushleft
+\begin{tabular}[t]{c}%
+\@author
+\end{tabular}\par}%
+
+\vskip 1cm					%distance between author and end of the box
+\par
+}
+\makeatother
+
+\newsavebox\envbox 					%Define name for boxes used
+
+%%________SECTION_______________%%%
+%%%Define "Section" environment for framed boxes
+%%%Usage: \begin{Section}{Name} blah blah blah \end{Section}
+\newenvironment{Section}[1]				%Environment takes one argument
+%%%Opening
+{
+\par 
+\flushleft
+% \colorbox draws a solid colour box around title that has the same length 
+%     as the minipage with text. 	
+\colorbox{OliveGreen}{
+\begin{minipage}{0.955\linewidth}	
+\centering							%uncomment if you want left entering of the section title 
+\Large\textbf{\color{white} #1 }			% Typesets section name
+% NB: change to \color{black} or \color{uniblue} when using sfbgreen with the
+%     colorbox command for the header
+\end{minipage}}								
+\par\nobreak
+
+\nointerlineskip 							% Fits title snugly above box (no gap)
+\setlength\parskip{-1pt}				% Even snugger
+\begin{lrbox}\envbox						% Opens box environment
+\begin{minipage}{0.95\linewidth}			%Opens minipage environment for section contents
+\large
+% To alter styles *inside* the sections, add modifications here.
+% For example, the following adds 1em (one line) skips between paragraphs.
+% You can also express these skip distances as fractional values (e.g. 0.8em) 
+% or with different units (e.g. 1cm, 12pt).
+\parskip=1em % DMH: I like to skip one line between paragraphs.
+}
+%%%Closing
+{\par
+\end{minipage}\end{lrbox} %Close minipage and box
+% Draw the box with the contents using selected frame colors.
+% Format is \fcolorbox{OUTER_COLOR}{FILL_COLOR}{...}
+
+\fcolorbox{white}{white}{\usebox\envbox}  	
+
+% Possible colors:
+% sfbgreen: defining color of the IDeaL logo
+% honeydew: good fill color if you want something other than white.
+%           looks nice with black text and uniblue header
+% uniblue: good if you dislike using sfbgreen very prominently
+% white: good if you want no background color or no border
+%        Note that if you want the appearance of no border but are using
+%        a different fill color, you probably want to define OUTER_COLOR
+%        as the same as FILL_COLOR, as in this example
+\vspace{0.25cm}							%Add spacing below box
+} 
+
+
+\title{Does referent predictability affect rate of pronominalization?}
+
+\author{Ekaterina Kravtchenko}
+	     
+\usepackage[noae]{Sweave}
+%\pagecolor{lighthoneydew}
+
+\begin{document}
+\SweaveOpts{concordance=TRUE}
+
+% Define box and box title style
+\tikzstyle{mybox} = [draw=black, fill=OliveGreen!20, very thick,
+    rectangle, rounded corners, inner sep=10pt, inner ysep=20pt]
+\tikzstyle{fancytitle} =[fill=OliveGreen, text=white]
+
+\hspace{-3cm}								%Align with edge of page, not margin
+\colorbox{white}{ %gray!10}{							%Coloured banner across top
+\begin{minipage}[c][100mm][c]{140mm}
+ \vspace{3cm}	
+%\flushleft									%Minipage for sfb logo
+\hspace{0.75cm}\includegraphics[scale=0.85]{images/logosfb.pdf}
+
+\end{minipage}
+
+\hspace{-5cm}	
+ \begin{minipage}[c][135mm][c]{640mm}					%Minipage for the title
+\maketitle	
+\vspace{-1cm}
+\begin{center}
+\LARGE Saarland University
+\end{center}
+\end{minipage}
+
+\hspace{-5cm}	
+\begin{minipage}[c][100mm][c]{140mm}	
+ \flushleft
+ \vspace{3cm}
+ \includegraphics[scale=0.7]{images/logouds.pdf}	%Minipage for uds logo	
+\end{minipage}}
+
+%%%Column1
+
+\vspace{-0.5cm}
+
+\begin{minipage}[t]{0.49\linewidth}
+
+\begin{Section}{Referent Predictability}
+
+It's often argued that speakers use \textbf{shorter or less complex expressions} for more \textbf{predictable referents}:
+
+%\vspace{-0.25cm}
+\begin{center}
+\begin{tabular}{cl}
+\multirow{3}{*}{Mary gave the book to John. }&\textbf{She...} \color{OliveGreen}{\checkmark}\\
+& Mary... \textbf{\color{orange}{?}}\\
+& The woman named Mary... \textbf{\color{red}{\xmark}}
+\end{tabular}
+\end{center}
+
+%\vspace{-1cm}
+\begin{center}
+\begin{tikzpicture}
+\node [mybox] (box){%
+    \begin{minipage}{0.95\textwidth}
+    \vspace{0.25cm}
+        \textbf{Referring expressions (REs)} are pronouns (overt or null), names, or definite descriptions that identify a particular person, thing, or idea.
+\vspace{0.5cm}
+\begin{itemize}[leftmargin=0.75in]
+	\item REs can be \textbf{short and ambiguous} (he/she/it), or \textbf{complex and informative} (John/John Smith/the man standing over there).
+	\item In practice, \textbf{most REs are entirely unambiguous in context}, at least for human readers/listeners.
+	\item Intuitively, it makes sense that \textbf{if a referent is particularly likely to be mentioned in a given context}, then the speaker will, or can afford to, use a \textbf{particularly short and ambiguous expression to refer to it} (possibly to conserve articulatory effort and/or get the message out faster).
+\end{itemize}
+    \end{minipage}
+};
+\node[fancytitle, right=10pt, rounded corners] at (box.north west) {Referring Expressions};
+\end{tikzpicture}%
+\end{center}
+
+\vspace{0.5cm}
+\textbf{But, is this actually true?} A fair amount of evidence that factors correlating with predictability determine referent form, but \textbf{how fine-grained} is this, and do \textbf{speakers reason in real time} about it?
+\vspace{-0.5cm}
+	\begin{itemize}[leftmargin=0.75in]
+		\item YES: Measured referent predictability correlates with RE choice; \textbf{corpus-based experiments} (Tily \& Piantadosi 2009; Kravtchenko 2014)
+		\item NO: Referent predictability \textbf{does not} correlate with RE choice; \textbf{passage continuations} (Fukumura \& van Gompel, 2010; Rohde \& Kehler, 2014; Stevenson et al., 1994)
+	\end{itemize}
+%\end{itemize}
+
+%\textbf{Specifically, explicitly mentioning an otherwise predictable event may imply it's unusual.}
+
+\end{Section}
+
+\end{minipage}
+\hspace{0.01\linewidth}
+\begin{minipage}[t]{0.49\linewidth}
+
+\begin{Section}{Design}
+
+\begin{center}
+24 items; 2x2 design:
+\end{center}
+
+\vspace{-1.75cm}
+\begin{center}
+\begin{tabular}{|c|c|c|c|}
+  \hline
+  \textbf{informative} & \textbf{context} & \textbf{event} & example \small(grocery shopping)\normalsize\\
+  \hline
+  \cellcolor{favoritered!60}\textbf{$\times$} & typical & predictable & \small paying cashier\normalsize\\
+  \cline{3-4}
+  \cellcolor{OliveGreen!40}\textbf{\checkmark} & \small(stereotypical event predictable)\normalsize & optional & \small getting apples\normalsize\\
+  \cline{2-4}
+  \cellcolor{OliveGreen!40}\textbf{\checkmark} & atypical & `predictable' & \small paying cashier..\textbf{as a habitual non-payer}\normalsize\\
+  \cline{3-4}
+  \cellcolor{OliveGreen!40}\textbf{\checkmark} & \small(stereotypical event unpredictable)\normalsize & optional & \small getting apples..\textbf{as a habitual non-payer}\normalsize\\
+  \hline
+\end{tabular}%
+\end{center}
+
+\end{Section}
+
+\begin{Section}{Materials \& Procedure (Exp. 1-4)}
+
+%\begin{enumerate}
+	%\item 
+	Participants (\textbf{n=400}/exp., MTurk) saw \textbf{6 items} total as either:
+	\vspace{-1.05cm}
+	\begin{itemize}[leftmargin=0.75in]
+		\item context \& setup \textbf{without utterance}, `activity typicality' Qs (\textit{\textbf{prior beliefs}})
+		\item context \& setup \textbf{with utterance% (varied with experiment)
+		,} `activity typicality' Qs (\textit{\textbf{updated beliefs}})
+	\end{itemize}
+%\end{enumerate}
+
+\normalsize
+\vspace{-.75cm}
+\begin{center}
+\begin{tabular}{|c|c|}
+  \hline
+  context & \cellcolor{violingold!30}John often \color{favoritered}{\textbf{\textit{goes to his local supermarket, as it's close by\textsubscript{typical}}}} \color{black}{$|$} \\%
+  & \cellcolor{violingold!30}\textbf{\textit{doesn't pay at the supermarket, as he's usually broke\textsubscript{atypical}}}.\\%
+  \hline
+  setup & \cellcolor{violingold!30}Today he entered the apartment with his shopping bags flowing over.\\%
+  & \cellcolor{violingold!30}\textit{\color{black!60}{(...John talks to his friend Susan, who goes to talk to their roommate Peter...)}}\\%
+  %\hline
+  %\textbf{baseline Qs} & \emph{How often do you think John usually \{\textit{pays the cashier} $|$ \textit{gets apples}\} at the store?}\\%
+  %& \textit{\color{black!60}{$<$3 additional distractor questions$>$}}\\%
+  %\hline
+  \hline \hline
+  \textbf{utterance} & \cellcolor{violingold!30}She commented: ``John went shopping. He \color{favoritered}{\textbf{\textit{paid the cashier\textsubscript{predictable}} (...)}} \color{black}{$|$} \\%
+  & \cellcolor{violingold!30}\textbf{\textit{got some apples\textsubscript{optional}} (...)} I just saw him in the living room.''\\%
+  \hline \hline
+  typicality Qs & \emph{How often do you think John usually \{\textit{pays the cashier} $|$ \textit{gets apples}\}...?}\\%
+   & \includegraphics[width=9in]{../../informationally-redundant-utterances/plots/old/large_slider.pdf}\\
+  \hline
+\end{tabular}%
+\end{center}
+
+\large
+
+\end{Section}
+
+\begin{Section}{Initial Predictions}
+
+\textbf{Overt mention of easily inferable `paying' event implies that it's unusual.}
+\vspace{-1cm}
+\begin{itemize}
+	\item[] $\rightsquigarrow$ Estimates of how often \textit{John} does \textit{X} should \textbf{decrease \textit{only} in \mbox{`uninformative'} (typical context - predictable event) condition}
+%	\item Estimates should stay same/increase in all other (informative) conditions
+\end{itemize}
+
+%\hspace{1cm}\begin{minipage}[t]{0.49\textwidth}
+%\textbf{Prediction following results of Exp. 1-2: Framing of information (implied intentionality/relevance) significantly influences whether listeners draw inference.}
+%\end{minipage}
+
+\end{Section}
+
+\end{minipage}
+\begin{minipage}[t]{0.49\linewidth}
+\begin{Section}{Exp. 1-2: Implicit Prosody}
+
+\begin{center}
+\tikzstyle{mybox} = [draw=black, fill=OliveGreen!20, very thick,
+    rectangle, rounded corners, inner sep=10pt, inner ysep=20pt]
+\tikzstyle{fancytitle} =[fill=violingold, text=white]
+\begin{tikzpicture}
+\node [mybox] (box){%
+\textbf{Exp. 1: \textit{"... He paid the cashier! ..."}}
+};
+\end{tikzpicture}%
+\end{center}
+
+\vspace{-1cm}
+Intuitively, %most natural 
+\textbf{prosody highlights unpredictably overinformative utterance}.
+
+\vspace{-0.25cm}
+
+\begin{minipage}[t]{0.99\textwidth}
+\tikzstyle{mybox} = [draw=black, fill=Black!10, very thick,
+    rectangle, rounded corners, inner sep=10pt, inner ysep=20pt]
+\tikzstyle{fancytitle} =[fill=Black!30, text=black]
+\begin{tikzpicture}
+\node [mybox] (box){%
+    \begin{minipage}[t]{0.41\textwidth}
+    \begin{figure}[H]
+%\begin{center}
+\vspace{-1.2cm}
+\includegraphics[scale=1.15]{../../informationally-redundant-utterances/plots/old/Exp_1.pdf}
+%\end{center}
+\end{figure}
+    \end{minipage}
+    \begin{minipage}[t]{0.58\textwidth}
+%\vspace{-11.5cm}
+%\textbf{Inconsistent} with prediction - 
+\phantom{text}\vspace{0.15cm}\textbf{Participants infer from overinformative utterances that an event is unusual, which increases their informational utility}.\\
+
+Estimates of activity typicality (how often \textit{John} does \textit{X}) decrease only in overinformative condition (int.: $\beta$$=$-14.61, p$<$.001).
+\end{minipage}
+};
+%\node[fancytitle, right=10pt, rounded corners] at (box.north west) {Baseline Estimates};
+\end{tikzpicture}%
+\hspace{1cm}
+\end{minipage}
+
+\vspace{-1.75cm}
+
+\begin{center}
+\tikzstyle{mybox} = [draw=black, fill=OliveGreen!20, very thick,
+    rectangle, rounded corners, inner sep=10pt, inner ysep=20pt]
+\tikzstyle{fancytitle} =[fill=violingold, text=white]
+\begin{tikzpicture}
+\node [mybox] (box){%
+\textbf{Exp. 2: \textit{"... He paid the cashier. ..."}}
+};
+\end{tikzpicture}%
+\end{center}
+
+\vspace{-1cm}
+\textbf{Exclamation point may signal surprise, and/or intentionality and relevance.}
+\vspace{0.05cm}
+%    \begin{figure}[H]
+%\begin{center}
+%\includegraphics[scale=1.25]{../../informationally-redundant-utterances/plots/old/Exp_2.pdf}
+%\end{center}
+%\end{figure}
+
+\begin{minipage}[t]{0.99\textwidth}
+\tikzstyle{mybox} = [draw=black, fill=Black!10, very thick,
+    rectangle, rounded corners, inner sep=10pt, inner ysep=20pt]
+\tikzstyle{fancytitle} =[fill=Black!30, text=black]
+\begin{tikzpicture}
+\node [mybox] (box){%
+    \begin{minipage}[t]{0.41\textwidth}
+    \begin{figure}[H]
+%\begin{center}
+\vspace{-1.2cm}
+\includegraphics[scale=1.15]{../../informationally-redundant-utterances/plots/old/Exp_2.pdf}
+%\end{center}
+\end{figure}
+    \end{minipage}
+    \begin{minipage}[t]{0.58\textwidth}
+%\vspace{-11.5cm}
+%\textbf{Inconsistent} with prediction - 
+\textbf{Participants do not seem to infer \mbox{anything} from overinformative \mbox{utterances}} (int.: \mbox{$\beta$$=$-0.13,} n.s.) (except for more highly \mbox{inferable} events -- post-hoc subgroup \mbox{analysis;} $\beta$$=$-3.01, p$<$.05).\\\\\tikzstyle{mybox} = [draw=black, fill=OliveGreen!20, very thick,
+    rectangle, rounded corners, inner sep=10pt, inner ysep=20pt]
+\tikzstyle{fancytitle} =[fill=violingold, text=white]
+\begin{tikzpicture}
+\node [mybox, text width=0.95\textwidth] (box){%
+\textbf{What's going on, and why does implicit prosody matter?}
+};
+\end{tikzpicture}%
+\end{minipage}
+};
+%\node[fancytitle, right=10pt, rounded corners] at (box.north west) {Baseline Estimates};
+\end{tikzpicture}%
+\hspace{1cm}
+\end{minipage}
+\vspace{-1.5cm}
+
+\end{Section}
+\end{minipage}
+\hspace{0.01\linewidth}
+\begin{minipage}[t]{0.49\linewidth}
+\begin{Section}{Exp. 3-4: Implied Relevance or Surprise?}
+
+\begin{center}
+\tikzstyle{mybox} = [draw=black, fill=OliveGreen!20, very thick,
+    rectangle, rounded corners, inner sep=10pt, inner ysep=20pt]
+\tikzstyle{fancytitle} =[fill=violingold, text=white]
+\begin{tikzpicture}
+\node [mybox] (box){%
+\textbf{Exp. 3: \textit{"... Oh yeah, and he paid the cashier. ..."}}
+};
+\end{tikzpicture}%
+\end{center}
+
+\vspace{-1cm}
+\textbf{Framing implies intentionality \& relevance}, but not surprise.
+
+\vspace{-0.25cm}
+
+\begin{minipage}[t]{0.99\textwidth}
+\tikzstyle{mybox} = [draw=black, fill=Black!10, very thick,
+    rectangle, rounded corners, inner sep=10pt, inner ysep=20pt]
+\tikzstyle{fancytitle} =[fill=Black!30, text=black]
+\begin{tikzpicture}
+\node [mybox] (box){%
+    \begin{minipage}[t]{0.41\textwidth}
+    \begin{figure}[H]
+%\begin{center}
+\vspace{-1.2cm}
+\includegraphics[scale=1.15]{../../informationally-redundant-utterances/plots/old/Exp_3.pdf}
+%\end{center}
+\end{figure}
+    \end{minipage}
+    \begin{minipage}[t]{0.58\textwidth}
+%\vspace{-11.5cm}
+%\textbf{Inconsistent} with prediction - 
+\phantom{text}\vspace{1.65cm}\textbf{Informational redundancy perceived as atypical \& results in revision of common ground}, as long as utterance framed as relevant \& intentional (int.: $\beta$$=$-15.44, p$<$.001).\\\\
+\end{minipage}
+};
+%\node[fancytitle, right=10pt, rounded corners] at (box.north west) {Baseline Estimates};
+\end{tikzpicture}%
+\hspace{1cm}
+\end{minipage}
+
+\vspace{-1.75cm}
+
+
+\begin{center}
+\tikzstyle{mybox} = [draw=black, fill=OliveGreen!20, very thick,
+    rectangle, rounded corners, inner sep=10pt, inner ysep=20pt]
+\tikzstyle{fancytitle} =[fill=violingold, text=white]
+\begin{tikzpicture}
+\node [mybox] (box){%
+\textbf{Exp. 4: \textit{"... You'd be surprised, but he paid the cashier. ..."}}
+};
+\end{tikzpicture}%
+\end{center}
+
+\vspace{-1cm}
+Is general methodology valid; can Exp. 1 results be \textbf{reduced to exclamation point signaling surprise}?
+\vspace{-0.25cm}
+
+\begin{minipage}[t]{0.99\textwidth}
+\tikzstyle{mybox} = [draw=black, fill=Black!10, very thick,
+    rectangle, rounded corners, inner sep=10pt, inner ysep=20pt]
+\tikzstyle{fancytitle} =[fill=Black!30, text=black]
+\begin{tikzpicture}
+\node [mybox] (box){%
+    \begin{minipage}[t]{0.41\textwidth}
+    \begin{figure}[H]
+%\begin{center}
+\vspace{-1.2cm}
+\includegraphics[scale=1.15]{../../informationally-redundant-utterances/plots/old/Exp_4.pdf}
+%\end{center}
+\end{figure}
+    \end{minipage}
+    \begin{minipage}[t]{0.58\textwidth}
+%\vspace{-11.5cm}
+%\textbf{Inconsistent} with prediction - 
+\phantom{text}\vspace{-0.6cm}\textbf{Surprise marker causes all events to be perceived as atypical} (int.: $\beta$$=$-28.04, p$<$.001).\\\\Validates experimental methodology; \mbox{suggests} Exp. 1 results can't be reduced to `surprise' marker (which decreases typicality across the board).
+\end{minipage}
+};
+%\node[fancytitle, right=10pt, rounded corners] at (box.north west) {Baseline Estimates};
+\end{tikzpicture}%
+\hspace{1cm}
+\end{minipage}
+
+
+\end{Section}
+\end{minipage}
+\vspace{-1.5cm}
+
+%\begin{minipage}[t]{1.025\linewidth}
+
+
+
+%\begin{Section}{Results}
+%
+%\begin{minipage}[t]{0.313\textwidth}
+%\tikzstyle{mybox} = [draw=black, fill=Black!10, very thick,
+%    rectangle, rounded corners, inner sep=10pt, inner ysep=20pt]
+%\tikzstyle{fancytitle} =[fill=Black!30, text=black]
+%\begin{tikzpicture}
+%\node [mybox] (box){%
+%    \begin{minipage}{0.95\textwidth}
+%    \begin{figure}[H]
+%\begin{center}
+%\includegraphics[scale=1.15]{../../informationally-redundant-utterances/plots/old/DETEC_baseline.pdf}
+%\end{center}
+%\end{figure}
+%    \end{minipage}
+%};
+%\node[fancytitle, right=10pt, rounded corners] at (box.north west) {Baseline Estimates};
+%\end{tikzpicture}%
+%
+%
+%\end{minipage}\hspace{1.5mm}
+%\begin{minipage}[t]{0.747\textwidth}
+%\tikzstyle{mybox} = [draw=black, fill=OliveGreen!20, very thick,
+%    rectangle, rounded corners, inner sep=10pt, inner ysep=20pt]
+%\tikzstyle{fancytitle} =[fill=OliveGreen, text=white]
+%\begin{tikzpicture}
+%\node [mybox] (box){%
+%    \begin{minipage}{0.5\textwidth}
+%    \vspace{0.5cm}
+%\begin{itemize}
+%	\item[] \textbf{Participants infer from uninformative utterances that an event is unusual, which increases informational utility}\vspace{0.5cm}
+%	\item[] Context and utterance `informativity' interact significantly ($\beta$ = \mbox{-5.08}, \textit{t} = -4.5, p$<$.001), as predicted (linear ME model, \mbox{maximal} RE structure).
+%	\begin{itemize}
+%		\item \textbf{Estimates of activity typicality} (How often \textit{John} does \textit{X}) \textbf{decrease only in the \mbox{uninformative} condition} (drives \mbox{interaction}).
+%		\item Slight increase in other conditions, including where context makes `predictable' event utterance informative.
+%		\item No significant differences between `informative' conditions.
+%	\end{itemize}
+%\end{itemize}
+%
+%\end{minipage}\hspace{1.5mm}
+%\begin{minipage}{0.4\textwidth}
+%    \begin{figure}[H]
+%\begin{center}
+%\includegraphics[scale=1.15]{../../informationally-redundant-utterances/plots/old/DETEC_update.pdf}
+%\end{center}
+%\end{figure}
+%    \end{minipage}
+%};
+%\node[fancytitle, right=10pt, rounded corners] at (box.north west) {Change in Activity Frequency Estimates};
+%\end{tikzpicture}
+%\end{minipage}
+%
+%\end{Section}
+
+%\end{minipage}
+
+%\begin{minipage}[t]{0.49\linewidth}
+%\begin{Section}{Online Processing (Pilot)}
+%\begin{itemize}
+%\item For uninformative utterances, \textbf{lower (or similar) processing difficulty?}
+%\begin{itemize}
+%	\item Conceptual probability of uninformative utterances is high
+%	\item Should be no difficulty with semantic integration
+%\end{itemize}
+%\item \textbf{Higher processing difficulty?} (predicted; cf. Smith \& Levy, 2013)
+%\begin{itemize}
+%	\item \textbf{Cloze probability is (presumably) low}, at/following utterance end
+%	\item \textbf{Pragmatic reasoning expected to incur processing cost} %Because contextually unsupported - that contextually supported pragmatic reasoning is 'costly' is questionable
+%	\item However, \textbf{informationally redundant utterances not uncommon in speech} (Walker 1993); \textbf{listeners may `adapt' to uninformative speakers}
+%\end{itemize}
+%\end{itemize}
+%
+%\vspace{-.5cm}
+%\begin{minipage}{0.49\linewidth}
+%\begin{center}
+%\includegraphics[scale=1.05]{../../informationally-redundant-utterances/plots/old/DETEC_first_pass.pdf}
+%\end{center}
+%\end{minipage}
+%\begin{minipage}{0.49\linewidth}
+%\begin{center}
+%\includegraphics[scale=1.05]{../../informationally-redundant-utterances/plots/old/DETEC_first_fixation.pdf}
+%\end{center}
+%\end{minipage}
+%
+%%\vspace{-.5cm}
+%\tikzstyle{mybox} = [draw=black, fill=OliveGreen!20, very thick,
+%    rectangle, rounded corners, inner sep=10pt, inner ysep=20pt]
+%\tikzstyle{fancytitle} =[fill=violingold, text=white]
+%\begin{tikzpicture}
+%\node [mybox] (box){%
+%\begin{minipage}{0.9925\textwidth}
+%Pilot eye-tracking results \textbf{do not support the prediction} that uninformative \mbox{utterances} are more difficult to process, although a \textbf{supporting trend} is found post-hoc in preceding regions (p$<$.05; ME model, max. RE structure).  \textbf{\mbox{Discourse} expectations, priming effects may confound interpretation}.
+%\end{minipage}
+%};
+%\end{tikzpicture}%
+%
+%\vspace{-0.85cm}
+%\normalsize
+%\begin{itemize}
+%	\item \textbf{`Optional' event conditions not included in analysis} due to string mismatch
+%\end{itemize}
+%
+%\large
+%
+%\end{Section}
+%\end{minipage}
+%\hspace{0.01\linewidth}
+\begin{minipage}[t]{0.49\linewidth}
+
+\begin{Section}{Conclusion}
+\begin{itemize}
+    \item Overinformative utterances trigger \textbf{pragmatic `atypicality' inferences} that can be cancelled by context.
+    \item \textbf{Excessive conceptual redundancy% of event utterances
+    } is perceived as anomalous; \textbf{listeners \mbox{alter} situation models/revise common ground} to accommodate it.
+    \item Informational redundancy \textbf{generates expected implicatures only when \mbox{utterances} framed as intentional and relevant to discourse/listeners}.
+    \item Potential implications for \textbf{computational models of language processing}:
+    \begin{itemize}
+    	\item Pragmatic reasoning re: utterance informativity may incur processing difficulty
+        \item N-gram models, models incorporating syntax/semantics wouldn't predict cost
+        \item Event models by themselves can't indicate what `too little' information is
+        \item Formal models of language processing must be able to model triggering of pragmatic inferences
+    \end{itemize}
+\end{itemize}
+\end{Section}
+
+\vspace{0.15cm}
+\end{minipage}\hspace{0.01\linewidth}
+\begin{minipage}[t]{0.49\linewidth}
+
+\begin{Section}{References}
+
+\small
+{\parskip=0pt
+\begin{hangparas}{.25in}{1}
+%Atlas, J. D., \& Levinson, S. C. (1981). It-clefts, informativeness and logical form: Radical pragmatics. In Cole, P. (ed.), \textit{Radical pragmatics}, pp. 1-62. New York: Academic Press.
+
+Bower, G. H., Black, J. B., \& Turner, T. J. (1979). Scripts in memory for text. \textit{Cognitive Psychology}, 11, 177--220.
+
+Grice, H. P. (1975). Logic and conversation. In: Cole, P., and J. L. Morgan (ed.), \textit{Speech acts}, pp. 41-58. New York: Academic Press.
+
+Horn, L. (1984). Toward a new taxonomy for pragmatic inference: Q-based and R-based implicature. In: Schiffrin, D. (ed.), \textit{Meaning, form and use in context}, pp. 11-42. Washington: Georgetown University Press.
+
+Levinson, S. C. (2000). \textit{Presumptive meanings -- the theory of generalized conversational implicature}. The MIT Press.
+
+Smith, N. J., \& Levy, R. (2013). The effect of word predictability on reading time is logarithmic. \textit{Cognition}, 128(3), 302--319.
+
+Zwaan, R. A., Magliano, J. P., \& Graesser, A. C. (1995). Dimensions of situation model construction in narrative comprehension. \textit{Journal of Experimental Psychology: Learning, Memory, and Cognition}, 21(2), 386--397.
+
+Walker, M. A. (1993). \textit{Informational redundancy and resource bounds in dialogue}. Doctoral Dissertation, University of Pennsylvania, Philadelphia, PA.
+
+\end{hangparas}}
+%\large
+
+\end{Section}
+
+\vspace{-0.4cm}
+
+\begin{Section}{Acknowledgements}
+
+{\fontsize{22.25}{25}\selectfont
+We thank members and collaborators of SFB 1102, Pranav Anand, Leon Bergen, Florian Jaeger, and Michael Tanenhaus.  This research was funded by the German Research Foundation (DFG) as part of SFB 1102.\par}
+\large
+
+\end{Section}
+
+\end{minipage}
+
+\vspace{-0.6cm}
+
+\hspace{-2.8cm}							%Align with edge of page, not margin
+\colorbox{white}{ %gray!10}{							%Coloured box on the bottom
+
+\begin{minipage}{612mm}					%Minipage for centered contents
+\color{black} 
+\Large
+\hspace{1cm}Information Density and Linguistic Encoding (SFB 1102) |
+Saarland University |
+Saarbr\"ucken, Germany
+\end{minipage}
+
+\begin{minipage}{200mm}						%Minipage for right contents
+  \flushleft\Large
+  \color{black} \hspace{2.5cm}eskrav@coli.uni-saarland.de
+\end{minipage}
+}
+
+
+\end{document}

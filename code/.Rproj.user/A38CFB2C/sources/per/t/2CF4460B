@@ -1,0 +1,23 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1510836446745.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "1086323567",
+    "id" : "2CF4460B",
+    "lastKnownWriteTime" : 1509025161,
+    "last_content_update" : 1509025161,
+    "path" : "~/Shared/informationally-redundant-utterances/code/incoherent.R",
+    "project_path" : "incoherent.R",
+    "properties" : {
+        "cursorPosition" : "27,47",
+        "scrollLine" : "0",
+        "tempName" : "Untitled1"
+    },
+    "relative_order" : 5,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}

@@ -1,0 +1,8 @@
+"0","filter(data, type==""ToP"" & !is.na(answerForm)) %>%"
+"0","  ggplot(aes(x = Continuation, fill = answerForm)) +"
+"0","  geom_bar(position = ""fill"") +"
+"0","  facet_grid(length ~ cont_bias) +"
+"0","  scale_y_continuous(labels = percent_format()) +"
+"0","  labs(x=""Continuation"",fill=""RE Form"", y=""Percent Pronouns"") +"
+"0","  scale_fill_brewer(palette = ""Greens"") + "
+"0","  ggtitle(""ToP Verbs"")"

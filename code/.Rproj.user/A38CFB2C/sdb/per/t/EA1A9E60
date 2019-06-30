@@ -1,0 +1,21 @@
+{
+    "collab_server" : "",
+    "contents" : "rm(list=ls())\n\nlibrary(tidyverse)\n\n",
+    "created" : 1507812420838.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "3822524758",
+    "id" : "EA1A9E60",
+    "lastKnownWriteTime" : 1507812591,
+    "last_content_update" : 1507812591727,
+    "path" : "~/Shared/informationally-redundant-utterances/code/event_simple.R",
+    "project_path" : "event_simple.R",
+    "properties" : {
+        "tempName" : "Untitled1"
+    },
+    "relative_order" : 1,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}
