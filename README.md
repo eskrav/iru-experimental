@@ -1,6 +1,6 @@
 # Interpretation of Informationally Redundant Utterances (Data and Analysis)
 
-This repository contains anonymized experimental data from readers' interpretations of informationally redundant utterances, as well as analysis of this data (multilevel linear regression), including a power analysis based on previous pilot data.
+This repository contains [anonymized experimental data](./data) from readers' interpretations of informationally redundant utterances, as well as [analysis of this data](./code/data_analysis.R) (multilevel linear regression), including a [power analysis](./code/power_analysis.R) based on previous pilot data.
 
 The paper based on this data can be found [here](./paper/paper.pdf).
 
