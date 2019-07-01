@@ -2,6 +2,7 @@ rm(list=ls(all=TRUE))
 
 library(lmerTest)
 library(tidyverse)
+# Results may be slightly different; original code was run with lme version 1.1-17
 library(lme4)
 library(Hmisc)
 
@@ -9,7 +10,7 @@ set.seed(42)
 
 #### Setup ####
 
-supp_data <- read_csv("supp_data.csv") %>% 
+supp_data <- read_csv("../data/supp_data.csv") %>% 
   mutate_if(is.character, funs(factor(.))) %>%
   mutate(workerid = factor(workerid))
 

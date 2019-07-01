@@ -12,10 +12,15 @@
 # nSubjects: number of subjects in simulation
 # nIterations: number of iterations in simulation
 
+# Adapted from Arnold, Benjamin F., Daniel R. Hogan, 
+# John M. Colford & Alan E. Hubbard. 2011. Simulation 
+# methods to estimate design power: An overview for 
+# applied research. BMC Medical Research Methodology 11(94).
+
 rm(list=ls())
-setwd("~/Shared/informationally-redundant-utterances/code/")
 library(Hmisc)
 library(rms)
+# Results may be slightly different; original code was run with lme version 1.1-17
 library(lme4)
 library(lmerTest)
 fnPower <-
